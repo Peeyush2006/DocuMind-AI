@@ -721,7 +721,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           <div className="h-4 w-px bg-slate-200 hidden sm:block" />
 
           <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-700 truncate max-w-[32vw] sm:max-w-xs">
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-700 truncate max-w-[22vw] sm:max-w-xs">
               {pdfMeta.filename}
             </span>
             <span className="hidden sm:inline text-[11px] text-slate-400">
@@ -734,23 +734,23 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {/* Clear Whole Document (Keep Design) */}
           <button
             onClick={clearWholeDocument}
-            className="flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 sm:px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md border border-slate-300 bg-white px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-colors shadow-2xs"
             title="Clears all text fields while 100% preserving lines, tables, borders, and document design"
             aria-label="Clear document text while keeping design"
           >
             <Eraser className="h-3.5 w-3.5 text-slate-500" />
             <span className="hidden md:inline">Clear Document (Keep Design)</span>
-            <span className="md:hidden">Clear</span>
+            <span className="md:hidden">Clear design</span>
           </button>
 
           {/* Restore Original Text */}
           <button
             onClick={restoreOriginalText}
-            className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 sm:px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md border border-slate-200 bg-white px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors shadow-2xs"
             title="Restore original text"
           >
             <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
-            <span className="hidden sm:inline">Restore</span>
+            <span className="inline">Restore</span>
           </button>
 
           <button
