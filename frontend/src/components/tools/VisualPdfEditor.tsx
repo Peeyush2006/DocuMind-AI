@@ -25,7 +25,6 @@ import {
   Italic,
   Download,
   Upload,
-  Sparkles,
   MousePointer,
   HelpCircle,
   ExternalLink,
@@ -604,7 +603,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           <div className="flex items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-2 cursor-pointer" onClick={onClose}>
               <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00a651] text-white shadow-xs">
-                <Sparkles className="h-4 w-4" />
+                <span className="text-lg font-black leading-none">D</span>
               </div>
               <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900">DocMind AI</span>
             </div>
@@ -714,7 +713,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00a651] text-white">
-              <Sparkles className="h-3.5 w-3.5" />
+              <span className="text-sm font-black leading-none">D</span>
             </div>
             <span className="text-sm sm:text-base font-bold tracking-tight text-slate-900">DocMind AI</span>
           </div>

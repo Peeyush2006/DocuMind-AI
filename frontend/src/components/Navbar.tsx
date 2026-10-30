@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   FileText,
-  Sparkles,
   Upload,
   Crown,
   PenTool,
@@ -42,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {/* DocMind AI brand badge */}
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00a651] text-white shadow-xs">
-              <Sparkles className="h-4 w-4" />
+              <span className="text-lg font-black leading-none">D</span>
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-bold tracking-tight text-[#00a651]">
