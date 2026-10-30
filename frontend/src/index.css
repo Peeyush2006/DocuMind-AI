@@ -12,6 +12,22 @@
   }
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .ProseMirror {
+    min-height: 300px;
+    padding: 1rem;
+  }
+}
+
 /* Custom TipTap Editor styling */
 .ProseMirror {
   outline: none;

@@ -12,14 +12,14 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { QuotaStatus } from '../types';
-import { SejdaToolType } from './SejdaToolsGrid';
+import { PdfToolType } from './PdfToolsGrid';
 
 interface NavbarProps {
   quota: QuotaStatus | null;
   onOpenUpload: () => void;
   onOpenPricing: () => void;
   onGoHome: () => void;
-  onSelectTool: (tool: SejdaToolType) => void;
+  onSelectTool: (tool: PdfToolType) => void;
   currentView: string;
 }
 
@@ -40,16 +40,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onGoHome}
             className="flex items-center gap-2.5 cursor-pointer group select-none"
           >
-            {/* Sejda-style clean green circular logo */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00a651] text-white font-black text-base shadow-xs">
-              S
+            {/* DocMind AI brand badge */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00a651] text-white shadow-xs">
+              <Sparkles className="h-4 w-4" />
             </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-bold tracking-tight text-[#00a651]">
-                DocuMind
-              </span>
-              <span className="text-xs font-medium text-slate-400 hidden sm:inline">
-                PDF
+                DocMind AI
               </span>
             </div>
           </div>

@@ -173,7 +173,7 @@ export const api = {
   },
 
   // ==========================================
-  // SEJDA PDF SUITE TOOLKIT APIS
+  // DocMind AI PDF tool APIs
   // ==========================================
 
   async renderPdfPages(file: File): Promise<{

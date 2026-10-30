@@ -147,6 +147,14 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [pageScale, setPageScale] = useState<number>(1);
+  const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 639px)').matches);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)');
+    const updateViewport = () => setIsMobileViewport(media.matches);
+    media.addEventListener('change', updateViewport);
+    return () => media.removeEventListener('change', updateViewport);
+  }, []);
 
   // Load PDF file into editor
   const loadPdf = async (f: File) => {
@@ -592,13 +600,13 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-white overflow-y-auto font-sans text-slate-800">
         {/* Top Navbar */}
-        <header className="h-14 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-6">
+        <header className="min-h-14 border-b border-slate-200 bg-white px-3 sm:px-6 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3 sm:gap-6">
             <div className="flex items-center gap-2 cursor-pointer" onClick={onClose}>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#00a651] text-white font-black text-lg shadow-xs">
-                S
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00a651] text-white shadow-xs">
+                <Sparkles className="h-4 w-4" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-slate-900">Sejda</span>
+              <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900">DocMind AI</span>
             </div>
             <div className="hidden md:flex items-center gap-5 text-sm text-slate-600 font-medium">
               <span className="flex items-center gap-1 hover:text-slate-900 cursor-pointer">
@@ -623,9 +631,9 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
         </header>
 
         {/* Hero Section */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-12 text-center max-w-4xl mx-auto">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12 text-center max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2">
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center justify-center gap-2">
               Online PDF editor
               <span className="text-[11px] font-bold px-1.5 py-0.5 border border-slate-300 rounded text-slate-500 uppercase tracking-wider align-top">
                 BETA
@@ -638,7 +646,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
           {/* Upload Button */}
           <div className="flex flex-col items-center gap-3">
-            <label className="inline-flex items-center gap-3 rounded-md bg-[#00a651] hover:bg-[#008f45] px-7 py-3.5 text-base font-semibold text-white shadow-sm cursor-pointer transition-all active:scale-98">
+            <label className="inline-flex w-full sm:w-auto justify-center items-center gap-3 rounded-md bg-[#00a651] hover:bg-[#008f45] px-5 sm:px-7 py-3.5 text-sm sm:text-base font-semibold text-white shadow-sm cursor-pointer transition-all active:scale-98">
               <FileText className="h-5 w-5" />
               <span>{loading ? 'Processing document...' : 'Upload PDF file'}</span>
               <ChevronDown className="h-4 w-4 opacity-80" />
@@ -678,7 +686,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             <span className="rounded bg-[#00a651] px-1.5 py-0.2 text-[10px] font-bold text-white uppercase tracking-wider">
               Offline
             </span>
-            <span>Rather work offline? Try DocuMind Desktop</span>
+            <span>Rather work offline? Try DocMind AI Desktop</span>
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
           </div>
 
@@ -705,10 +713,10 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       <header className="h-12 border-b border-slate-200 bg-white px-4 flex items-center justify-between shrink-0 z-40">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#00a651] text-white font-black text-sm">
-              S
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#00a651] text-white">
+              <Sparkles className="h-3.5 w-3.5" />
             </div>
-            <span className="text-base font-bold tracking-tight text-slate-900 hidden sm:inline">DocuMind</span>
+            <span className="text-sm sm:text-base font-bold tracking-tight text-slate-900">DocMind AI</span>
           </div>
 
           <div className="h-4 w-px bg-slate-200 hidden sm:block" />
@@ -757,7 +765,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
       {/* 2. FLOATING TOP TOOLBAR (Centered Pill as in Screenshot 3 & 4) */}
       <div className="py-2 flex flex-col items-center justify-center shrink-0 z-30">
-        <div className="bg-white border border-slate-300/80 rounded-md shadow-xs px-1.5 py-1 flex items-center gap-0.5 text-xs text-slate-700 font-medium">
+        <div className="no-scrollbar max-w-full overflow-x-auto bg-white border border-slate-300/80 rounded-md shadow-xs px-1.5 py-1 flex w-max items-center gap-0.5 text-xs text-slate-700 font-medium">
           {/* Text Tool */}
           <button
             onClick={() => {
@@ -1169,15 +1177,11 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {/* FLOATING IN-LINE CONTEXTUAL FONT TOOLBAR (Screenshot 3) */}
           {activeSpan && (
             <div
-              className="absolute z-50 flex items-center gap-1 bg-white border border-slate-300 rounded-md shadow-xl px-2 py-1 text-xs text-slate-700 transition-all"
-              style={{
+              className={`${isMobileViewport ? 'fixed bottom-14 left-2 right-2 z-[60] flex-wrap justify-center shadow-2xl' : 'absolute z-50'} flex items-center gap-1 bg-white border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-700 transition-all`}
+              style={isMobileViewport ? undefined : {
                 left: `${Math.min(Math.max(activeSpan.x * 100, 2), 65)}%`,
-                top:
-                  activeSpan.y < 0.08
-                    ? `${(activeSpan.y + activeSpan.height) * 100}%`
-                    : `${activeSpan.y * 100}%`,
-                transform:
-                  activeSpan.y < 0.08 ? 'translateY(6px)' : 'translateY(-118%)'
+                top: activeSpan.y < 0.16 ? `${(activeSpan.y + activeSpan.height) * 100}%` : `${activeSpan.y * 100}%`,
+                transform: activeSpan.y < 0.16 ? 'translateY(6px)' : 'translateY(-118%)'
               }}
               onMouseDown={(e) => e.preventDefault()}
               onClick={(e) => e.stopPropagation()}

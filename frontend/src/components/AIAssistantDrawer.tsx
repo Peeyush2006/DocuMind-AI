@@ -10,7 +10,8 @@ import {
   Copy,
   Check,
   HelpCircle,
-  FileText
+  FileText,
+  X
 } from 'lucide-react';
 import { DocumentDetails, AIAssistantResponse } from '../types';
 import { api } from '../api/client';
@@ -19,12 +20,14 @@ interface AIAssistantDrawerProps {
   document: DocumentDetails;
   currentContentHtml: string;
   onApplyCorrection?: (correctedText: string) => void;
+  onClose?: () => void;
 }
 
 export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
   document,
   currentContentHtml,
-  onApplyCorrection
+  onApplyCorrection,
+  onClose
 }) => {
   const [activeAction, setActiveAction] = useState<'summarize' | 'explain' | 'correct' | 'translate' | 'qa'>('summarize');
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,7 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white border-l border-slate-200 w-full sm:w-96 shrink-0">
+    <div className="flex h-full w-full shrink-0 flex-col border-l border-slate-200 bg-white md:w-96">
       {/* Drawer Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -69,10 +72,11 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-900">Document Assistant</h4>
+            <h4 className="text-xs font-bold text-slate-900">DocMind AI Assistant</h4>
             <p className="text-[11px] text-slate-500">Document Q&A, translation & review</p>
           </div>
         </div>
+        {onClose && <button type="button" onClick={onClose} className="md:hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Close AI assistant"><X className="h-5 w-5" /></button>}
       </div>
 
       {/* Action Quick Buttons */}

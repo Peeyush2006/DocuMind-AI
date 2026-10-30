@@ -79,8 +79,8 @@ export const TipTapEditor: React.FC<TipTapEditorProps> = ({
   return (
     <div ref={containerRef} className="flex flex-col h-full bg-white">
       {/* Editor Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-1 border-b border-slate-200 bg-slate-50/80 px-3 py-2 text-slate-700">
-        <div className="flex flex-wrap items-center gap-0.5">
+      <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50/80 px-2 sm:px-3 py-2 text-slate-700">
+        <div className="no-scrollbar flex min-w-0 flex-1 flex-nowrap items-center gap-0.5 overflow-x-auto">
           {/* Bold */}
           <button
             type="button"

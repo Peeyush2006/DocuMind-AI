@@ -111,8 +111,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 p-6 sm:p-8 my-6">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+      <div className="relative w-full max-w-2xl max-h-[94vh] overflow-y-auto rounded-2xl bg-white shadow-2xl ring-1 ring-slate-900/10 p-4 sm:p-6 my-auto sm:my-4">
         <button
           onClick={onClose}
           className="absolute right-5 top-5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
@@ -168,7 +168,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+            className={`group relative flex min-h-28 flex-col items-center justify-center rounded-xl border-2 border-dashed p-4 sm:p-6 text-center cursor-pointer transition-colors ${
               file
                 ? 'border-emerald-500 bg-emerald-50/20'
                 : 'border-slate-300 hover:border-blue-500 hover:bg-slate-50'
@@ -276,19 +276,19 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
               disabled={uploading}
-              className="rounded-md border border-slate-200 px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              className="w-full sm:w-auto rounded-md border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={uploading || !file}
-              className="flex items-center gap-2 rounded-md bg-[#00a651] px-5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#008f45] active:scale-98 disabled:opacity-50 transition-colors"
+              className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-md bg-[#00a651] px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-[#008f45] active:scale-98 disabled:opacity-50 transition-colors"
             >
               {uploading ? (
                 <>

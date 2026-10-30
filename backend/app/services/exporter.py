@@ -18,7 +18,7 @@ def clean_html_text(html: str) -> str:
 
 def export_to_txt(html_content: str, title: str, doc_id: str) -> str:
     raw_text = clean_html_text(html_content)
-    filename = f"{title.replace(' ', '_')}_{doc_id[:6]}.txt"
+    filename = f"DocMind_AI_{title.replace(' ', '_')}_{doc_id[:6]}.txt"
     filepath = EXPORTS_DIR / filename
     
     with open(filepath, "w", encoding="utf-8") as f:
@@ -70,13 +70,13 @@ def export_to_docx(html_content: str, title: str, doc_id: str) -> str:
                             cell_run.font.bold = True
                 doc.add_paragraph()
 
-    filename = f"{title.replace(' ', '_')}_{doc_id[:6]}.docx"
+    filename = f"DocMind_AI_{title.replace(' ', '_')}_{doc_id[:6]}.docx"
     filepath = EXPORTS_DIR / filename
     doc.save(str(filepath))
     return str(filepath)
 
 def export_to_pdf(html_content: str, title: str, doc_id: str) -> str:
-    filename = f"{title.replace(' ', '_')}_{doc_id[:6]}.pdf"
+    filename = f"DocMind_AI_{title.replace(' ', '_')}_{doc_id[:6]}.pdf"
     filepath = EXPORTS_DIR / filename
     
     doc = SimpleDocTemplate(str(filepath), pagesize=letter, rightMargin=54, leftMargin=54, topMargin=54, bottomMargin=54)
@@ -165,7 +165,7 @@ def export_to_xlsx(html_content: str, title: str, doc_id: str, table_data=None) 
     # Title row
     ws.merge_cells("A1:G1")
     title_cell = ws["A1"]
-    title_cell.value = f"DocuMind AI — {title}"
+    title_cell.value = f"DocMind AI — {title}"
     title_cell.font = Font(name="Calibri", size=14, bold=True, color="1E293B")
     
     current_row = 3
@@ -227,7 +227,7 @@ def export_to_xlsx(html_content: str, title: str, doc_id: str, table_data=None) 
                 max_len = len(val_str)
         ws.column_dimensions[col_letter].width = max(max_len + 3, 12)
 
-    filename = f"{title.replace(' ', '_')}_{doc_id[:6]}.xlsx"
+    filename = f"DocMind_AI_{title.replace(' ', '_')}_{doc_id[:6]}.xlsx"
     filepath = EXPORTS_DIR / filename
     wb.save(str(filepath))
     return str(filepath)

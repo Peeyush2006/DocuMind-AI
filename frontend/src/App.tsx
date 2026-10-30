@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { QuotaBanner } from './components/QuotaBanner';
-import { SejdaToolsGrid, SejdaToolType } from './components/SejdaToolsGrid';
+import { PdfToolsGrid, PdfToolType } from './components/PdfToolsGrid';
 import { DocumentList } from './components/DocumentList';
 import { DualPaneWorkspace } from './components/DualPaneWorkspace';
 import { UploadModal } from './components/UploadModal';
 import { PlanPricingModal } from './components/PlanPricingModal';
 
-// Sejda Tool Modals
+// PDF tool modals
 import { VisualPdfEditor } from './components/tools/VisualPdfEditor';
 import { MergePdfModal } from './components/tools/MergePdfModal';
 import { SplitPdfModal } from './components/tools/SplitPdfModal';
@@ -23,7 +23,7 @@ import { api } from './api/client';
 
 export function App() {
   const [activeDocId, setActiveDocId] = useState<string | null>(null);
-  const [activeTool, setActiveTool] = useState<SejdaToolType | null>(null);
+  const [activeTool, setActiveTool] = useState<PdfToolType | null>(null);
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [samples, setSamples] = useState<SampleDocument[]>([]);
@@ -73,7 +73,7 @@ export function App() {
     setActiveDocId(docId);
   };
 
-  const handleSelectTool = (tool: SejdaToolType) => {
+  const handleSelectTool = (tool: PdfToolType) => {
     setActiveTool(tool);
   };
 
@@ -107,10 +107,10 @@ export function App() {
           />
         ) : (
           <div className="space-y-6">
-            {/* Sejda All Tools Categorized Matrix */}
-            <SejdaToolsGrid
+            {/* DocMind AI tools matrix */}
+            <PdfToolsGrid
               onSelectTool={handleSelectTool}
-              onOpenDocuMindScanner={() => setShowUploadModal(true)}
+              onOpenUpload={() => setShowUploadModal(true)}
             />
 
             {/* Document Intelligence Library */}
@@ -125,7 +125,7 @@ export function App() {
         )}
       </main>
 
-      {/* --- SEJDA TOOL WORKSPACES & MODALS --- */}
+      {/* --- PDF TOOL WORKSPACES & MODALS --- */}
 
       {/* 1. Visual PDF Editor & Signer */}
       {activeTool === 'editor' && (

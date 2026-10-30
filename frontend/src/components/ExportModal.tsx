@@ -99,7 +99,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, docum
           <span>Need the enhanced original image?</span>
           <a
             href={document.enhanced_url || document.source_url}
-            download={`DocuMind_Scan_${document.id}.png`}
+            download={`DocMind_AI_Scan_${document.id}.png`}
             target="_blank"
             rel="noreferrer"
             className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"

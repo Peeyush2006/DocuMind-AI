@@ -42,7 +42,7 @@ import {
   Check
 } from 'lucide-react';
 
-export type SejdaToolType =
+export type PdfToolType =
   | 'editor'
   | 'merge'
   | 'split'
@@ -60,14 +60,14 @@ export type SejdaToolType =
   | 'pdf_to_text'
   | 'ai_scanner';
 
-interface SejdaToolsGridProps {
-  onSelectTool: (tool: SejdaToolType) => void;
-  onOpenDocuMindScanner: () => void;
+interface PdfToolsGridProps {
+  onSelectTool: (tool: PdfToolType) => void;
+  onOpenUpload: () => void;
 }
 
-export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
+export const PdfToolsGrid: React.FC<PdfToolsGridProps> = ({
   onSelectTool,
-  onOpenDocuMindScanner
+  onOpenUpload
 }) => {
   const [activeGuideTab, setActiveGuideTab] = useState<'edit' | 'word' | 'merge' | 'jpg' | 'delete' | 'compress' | 'type'>('edit');
   const [search, setSearch] = useState('');
@@ -75,7 +75,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
   // 1. Most Popular (Page 1 & 2 of PDF)
   const popularTools = [
     {
-      id: 'editor' as SejdaToolType,
+      id: 'editor' as PdfToolType,
       name: 'PDF Editor',
       desc: 'Edit PDF files for free. Fill & sign PDF. Add text, links, images and shapes. Edit existing PDF text. Annotate PDF',
       icon: PenTool,
@@ -83,7 +83,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#0284c7]'
     },
     {
-      id: 'compress' as SejdaToolType,
+      id: 'compress' as PdfToolType,
       name: 'Compress',
       desc: 'Reduce the size of your PDF',
       icon: Minimize2,
@@ -91,7 +91,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#0d9488]'
     },
     {
-      id: 'delete' as SejdaToolType,
+      id: 'delete' as PdfToolType,
       name: 'Delete Pages',
       desc: 'Remove pages from a PDF document',
       icon: Trash2,
@@ -99,7 +99,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#0284c7]'
     },
     {
-      id: 'merge' as SejdaToolType,
+      id: 'merge' as PdfToolType,
       name: 'Merge',
       desc: 'Combine multiple PDFs and images into one',
       icon: GitMerge,
@@ -107,7 +107,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#16a34a]'
     },
     {
-      id: 'split' as SejdaToolType,
+      id: 'split' as PdfToolType,
       name: 'Split',
       desc: 'Split specific page ranges or extract every page into a separate document',
       icon: Scissors,
@@ -115,7 +115,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#65a30d]'
     },
     {
-      id: 'organize' as SejdaToolType,
+      id: 'organize' as PdfToolType,
       name: 'Crop',
       desc: 'Trim PDF margins, change PDF page size',
       icon: Crop,
@@ -123,7 +123,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#db2777]'
     },
     {
-      id: 'editor' as SejdaToolType,
+      id: 'editor' as PdfToolType,
       name: 'Fill & Sign',
       desc: 'Add signature to PDF. Fill out PDF forms',
       icon: FileSignature,
@@ -131,7 +131,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#0891b2]'
     },
     {
-      id: 'pdf_to_word' as SejdaToolType,
+      id: 'pdf_to_word' as PdfToolType,
       name: 'PDF To Word',
       desc: 'Convert from PDF to DOC online',
       icon: FileText,
@@ -139,7 +139,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
       iconColor: 'text-[#ea580c]'
     },
     {
-      id: 'split' as SejdaToolType,
+      id: 'split' as PdfToolType,
       name: 'Extract Pages',
       desc: 'Get a new document containing only the desired pages',
       icon: Layers,
@@ -153,84 +153,84 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
     {
       title: 'MERGE',
       tools: [
-        { id: 'merge' as SejdaToolType, name: 'Alternate & Mix', desc: 'Mixes pages from 2 or more documents, alternating between them', icon: Shuffle },
-        { id: 'merge' as SejdaToolType, name: 'Merge', desc: 'Combine multiple PDFs and images into one', icon: GitMerge },
-        { id: 'organize' as SejdaToolType, name: 'Organize', desc: 'Arrange and reorder PDF pages visually', icon: Layers }
+        { id: 'merge' as PdfToolType, name: 'Alternate & Mix', desc: 'Mixes pages from 2 or more documents, alternating between them', icon: Shuffle },
+        { id: 'merge' as PdfToolType, name: 'Merge', desc: 'Combine multiple PDFs and images into one', icon: GitMerge },
+        { id: 'organize' as PdfToolType, name: 'Organize', desc: 'Arrange and reorder PDF pages visually', icon: Layers }
       ]
     },
     {
       title: 'SPLIT',
       tools: [
-        { id: 'split' as SejdaToolType, name: 'Extract Pages', desc: 'Get a new document containing only the desired pages', icon: Layers },
-        { id: 'split' as SejdaToolType, name: 'Split By Pages', desc: 'Split specific page ranges or extract every page into a separate document', icon: Scissors },
-        { id: 'split' as SejdaToolType, name: 'Split By Bookmarks', desc: 'Extract chapters to separate documents based on bookmarks', icon: Bookmark },
-        { id: 'split' as SejdaToolType, name: 'Split In Half', desc: 'Split two page layout scans, A3 to double A4 or A4 to double A5', icon: Columns },
-        { id: 'split' as SejdaToolType, name: 'Split By Size', desc: 'Get multiple smaller documents with specific file sizes', icon: Minimize2 },
-        { id: 'split' as SejdaToolType, name: 'Split By Text', desc: 'Extract separate documents when specific text changes from page to page', icon: FileText }
+        { id: 'split' as PdfToolType, name: 'Extract Pages', desc: 'Get a new document containing only the desired pages', icon: Layers },
+        { id: 'split' as PdfToolType, name: 'Split By Pages', desc: 'Split specific page ranges or extract every page into a separate document', icon: Scissors },
+        { id: 'split' as PdfToolType, name: 'Split By Bookmarks', desc: 'Extract chapters to separate documents based on bookmarks', icon: Bookmark },
+        { id: 'split' as PdfToolType, name: 'Split In Half', desc: 'Split two page layout scans, A3 to double A4 or A4 to double A5', icon: Columns },
+        { id: 'split' as PdfToolType, name: 'Split By Size', desc: 'Get multiple smaller documents with specific file sizes', icon: Minimize2 },
+        { id: 'split' as PdfToolType, name: 'Split By Text', desc: 'Extract separate documents when specific text changes from page to page', icon: FileText }
       ]
     },
     {
       title: 'EDIT & SIGN',
       tools: [
-        { id: 'editor' as SejdaToolType, name: 'PDF Editor', desc: 'Edit PDF files for free. Fill & sign PDF. Add text, links, images and shapes', icon: PenTool },
-        { id: 'editor' as SejdaToolType, name: 'Fill & Sign', desc: 'Add signature to PDF. Fill out PDF forms', icon: FileSignature },
-        { id: 'editor' as SejdaToolType, name: 'Create Forms', desc: 'Free PDF forms creator. Make existing PDF documents fillable', icon: Edit },
-        { id: 'delete' as SejdaToolType, name: 'Delete Pages', desc: 'Remove pages from a PDF document', icon: Trash2 }
+        { id: 'editor' as PdfToolType, name: 'PDF Editor', desc: 'Edit PDF files for free. Fill & sign PDF. Add text, links, images and shapes', icon: PenTool },
+        { id: 'editor' as PdfToolType, name: 'Fill & Sign', desc: 'Add signature to PDF. Fill out PDF forms', icon: FileSignature },
+        { id: 'editor' as PdfToolType, name: 'Create Forms', desc: 'Free PDF forms creator. Make existing PDF documents fillable', icon: Edit },
+        { id: 'delete' as PdfToolType, name: 'Delete Pages', desc: 'Remove pages from a PDF document', icon: Trash2 }
       ]
     },
     {
       title: 'COMPRESS & SCANS',
       tools: [
-        { id: 'compress' as SejdaToolType, name: 'Compress', desc: 'Reduce the size of your PDF while maintaining quality', icon: Minimize2 },
-        { id: 'ai_scanner' as SejdaToolType, name: 'Deskew', desc: 'Automatically straighten and deskew scanned PDF pages', icon: RotateCw },
-        { id: 'ai_scanner' as SejdaToolType, name: 'OCR', desc: 'Convert PDF scans to searchable text and PDFs. Extract text from scans', icon: Sparkles }
+        { id: 'compress' as PdfToolType, name: 'Compress', desc: 'Reduce the size of your PDF while maintaining quality', icon: Minimize2 },
+        { id: 'ai_scanner' as PdfToolType, name: 'Deskew', desc: 'Automatically straighten and deskew scanned PDF pages', icon: RotateCw },
+        { id: 'ai_scanner' as PdfToolType, name: 'OCR', desc: 'Convert PDF scans to searchable text and PDFs. Extract text from scans', icon: Sparkles }
       ]
     },
     {
       title: 'SECURITY',
       tools: [
-        { id: 'protect' as SejdaToolType, name: 'Protect', desc: 'Protect file with password and permissions', icon: Lock },
-        { id: 'unlock' as SejdaToolType, name: 'Unlock', desc: 'Remove restrictions and password from PDF files', icon: Unlock },
-        { id: 'watermark' as SejdaToolType, name: 'Watermark', desc: 'Add image or text watermark to PDF documents', icon: Stamp },
-        { id: 'protect' as SejdaToolType, name: 'Flatten', desc: 'Makes fillable PDFs read-only. Print & scan in one step', icon: FileCheck }
+        { id: 'protect' as PdfToolType, name: 'Protect', desc: 'Protect file with password and permissions', icon: Lock },
+        { id: 'unlock' as PdfToolType, name: 'Unlock', desc: 'Remove restrictions and password from PDF files', icon: Unlock },
+        { id: 'watermark' as PdfToolType, name: 'Watermark', desc: 'Add image or text watermark to PDF documents', icon: Stamp },
+        { id: 'protect' as PdfToolType, name: 'Flatten', desc: 'Makes fillable PDFs read-only. Print & scan in one step', icon: FileCheck }
       ]
     },
     {
       title: 'CONVERT FROM PDF',
       tools: [
-        { id: 'pdf_to_excel' as SejdaToolType, name: 'PDF To Excel', desc: 'Convert PDF to Excel or CSV online for free. Extract table data', icon: FileSpreadsheet },
-        { id: 'images_to_pdf' as SejdaToolType, name: 'PDF To JPG', desc: 'Get PDF pages converted to JPG, PNG or TIFF images', icon: Image },
-        { id: 'pdf_to_word' as SejdaToolType, name: 'PDF To PPT', desc: 'Convert PDF to PowerPoint presentation online', icon: Presentation },
-        { id: 'pdf_to_text' as SejdaToolType, name: 'PDF To Text', desc: 'Copies all text from the PDF document and extracts it to text file', icon: FileDown },
-        { id: 'pdf_to_word' as SejdaToolType, name: 'PDF To Word', desc: 'Convert from PDF to editable DOC online', icon: FileText }
+        { id: 'pdf_to_excel' as PdfToolType, name: 'PDF To Excel', desc: 'Convert PDF to Excel or CSV online for free. Extract table data', icon: FileSpreadsheet },
+        { id: 'images_to_pdf' as PdfToolType, name: 'PDF To JPG', desc: 'Get PDF pages converted to JPG, PNG or TIFF images', icon: Image },
+        { id: 'pdf_to_word' as PdfToolType, name: 'PDF To PPT', desc: 'Convert PDF to PowerPoint presentation online', icon: Presentation },
+        { id: 'pdf_to_text' as PdfToolType, name: 'PDF To Text', desc: 'Copies all text from the PDF document and extracts it to text file', icon: FileDown },
+        { id: 'pdf_to_word' as PdfToolType, name: 'PDF To Word', desc: 'Convert from PDF to editable DOC online', icon: FileText }
       ]
     },
     {
       title: 'CONVERT TO PDF',
       tools: [
-        { id: 'pdf_to_word' as SejdaToolType, name: 'HTML To PDF', desc: 'Convert web pages or HTML files to PDF documents', icon: Globe },
-        { id: 'images_to_pdf' as SejdaToolType, name: 'JPG To PDF', desc: 'Convert images to PDF document', icon: Image },
-        { id: 'pdf_to_word' as SejdaToolType, name: 'Word To PDF', desc: 'Creates a PDF document from Microsoft Word .docx', icon: FileText }
+        { id: 'pdf_to_word' as PdfToolType, name: 'HTML To PDF', desc: 'Convert web pages or HTML files to PDF documents', icon: Globe },
+        { id: 'images_to_pdf' as PdfToolType, name: 'JPG To PDF', desc: 'Convert images to PDF document', icon: Image },
+        { id: 'pdf_to_word' as PdfToolType, name: 'Word To PDF', desc: 'Creates a PDF document from Microsoft Word .docx', icon: FileText }
       ]
     },
     {
       title: 'OTHERS',
       tools: [
-        { id: 'page_numbers' as SejdaToolType, name: 'Bates Numbering', desc: 'Bates stamp multiple files at once', icon: Hash },
-        { id: 'organize' as SejdaToolType, name: 'Create Bookmarks', desc: 'Create PDF Bookmarks', icon: Bookmark },
-        { id: 'organize' as SejdaToolType, name: 'Crop', desc: 'Trim PDF margins, change PDF page size', icon: Crop },
-        { id: 'editor' as SejdaToolType, name: 'Edit Metadata', desc: 'Change PDF Author, Title, Keywords, Subject and other metadata fields', icon: Edit },
-        { id: 'split' as SejdaToolType, name: 'Extract Images', desc: 'Extract all embedded images from PDF', icon: Image },
-        { id: 'rotate' as SejdaToolType, name: 'Flip', desc: 'Mirror pages horizontally or vertically', icon: Shuffle },
-        { id: 'compress' as SejdaToolType, name: 'Grayscale', desc: 'Make a PDF text and images grayscale', icon: Eye },
-        { id: 'page_numbers' as SejdaToolType, name: 'Header & Footer', desc: 'Apply page numbers or text labels to PDF files', icon: Hash },
-        { id: 'organize' as SejdaToolType, name: 'N-Up', desc: 'Print multiple pages per sheet per paper. 2-up or 4-up', icon: Grid },
-        { id: 'page_numbers' as SejdaToolType, name: 'Page Numbers', desc: 'Add customizable PDF page numbers', icon: Hash },
-        { id: 'editor' as SejdaToolType, name: 'Rename', desc: 'Change document filename based on text from PDF pages', icon: Type },
-        { id: 'compress' as SejdaToolType, name: 'Repair', desc: 'Recover data from a corrupted or damaged PDF document', icon: Shield },
-        { id: 'organize' as SejdaToolType, name: 'Resize', desc: 'Add page margins and padding, Change PDF page size', icon: Crop },
-        { id: 'rotate' as SejdaToolType, name: 'Rotate', desc: 'Rotate and save PDF pages permanently', icon: RotateCw },
-        { id: 'delete' as SejdaToolType, name: 'Remove Annotations', desc: 'Batch remove highlights, strikeouts or annotations', icon: Trash2 }
+        { id: 'page_numbers' as PdfToolType, name: 'Bates Numbering', desc: 'Bates stamp multiple files at once', icon: Hash },
+        { id: 'organize' as PdfToolType, name: 'Create Bookmarks', desc: 'Create PDF Bookmarks', icon: Bookmark },
+        { id: 'organize' as PdfToolType, name: 'Crop', desc: 'Trim PDF margins, change PDF page size', icon: Crop },
+        { id: 'editor' as PdfToolType, name: 'Edit Metadata', desc: 'Change PDF Author, Title, Keywords, Subject and other metadata fields', icon: Edit },
+        { id: 'split' as PdfToolType, name: 'Extract Images', desc: 'Extract all embedded images from PDF', icon: Image },
+        { id: 'rotate' as PdfToolType, name: 'Flip', desc: 'Mirror pages horizontally or vertically', icon: Shuffle },
+        { id: 'compress' as PdfToolType, name: 'Grayscale', desc: 'Make a PDF text and images grayscale', icon: Eye },
+        { id: 'page_numbers' as PdfToolType, name: 'Header & Footer', desc: 'Apply page numbers or text labels to PDF files', icon: Hash },
+        { id: 'organize' as PdfToolType, name: 'N-Up', desc: 'Print multiple pages per sheet per paper. 2-up or 4-up', icon: Grid },
+        { id: 'page_numbers' as PdfToolType, name: 'Page Numbers', desc: 'Add customizable PDF page numbers', icon: Hash },
+        { id: 'editor' as PdfToolType, name: 'Rename', desc: 'Change document filename based on text from PDF pages', icon: Type },
+        { id: 'compress' as PdfToolType, name: 'Repair', desc: 'Recover data from a corrupted or damaged PDF document', icon: Shield },
+        { id: 'organize' as PdfToolType, name: 'Resize', desc: 'Add page margins and padding, Change PDF page size', icon: Crop },
+        { id: 'rotate' as PdfToolType, name: 'Rotate', desc: 'Rotate and save PDF pages permanently', icon: RotateCw },
+        { id: 'delete' as PdfToolType, name: 'Remove Annotations', desc: 'Batch remove highlights, strikeouts or annotations', icon: Trash2 }
       ]
     }
   ];
@@ -238,7 +238,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
   return (
     <div className="relative w-full overflow-hidden font-sans">
       {/* 1. TOP WHITE HERO SECTION WITH TEAL DOT ARCHES */}
-      <div className="relative bg-white pt-12 pb-10 sm:pt-16 sm:pb-14 px-4 sm:px-6">
+      <div className="relative bg-white pt-8 pb-8 sm:pt-16 sm:pb-14 px-4 sm:px-6">
         {/* Left Decorative Teal Dot Pattern */}
         <svg
           className="absolute left-0 top-6 w-32 sm:w-44 h-80 pointer-events-none opacity-50 hidden md:block select-none"
@@ -269,7 +269,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
 
         {/* Center Hero Content */}
         <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-slate-900 leading-tight">
             We help with your PDF tasks
           </h1>
           <p className="mt-3 text-lg sm:text-xl font-medium text-[#00a651]">
@@ -280,7 +280,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
           <div className="mt-7 flex flex-col items-center gap-2.5">
             <button
               onClick={() => onSelectTool('editor')}
-              className="inline-flex items-center gap-2 rounded-md bg-[#00a651] hover:bg-[#008f45] px-8 py-3.5 text-base font-bold text-white shadow-sm hover:shadow-md transition-all active:scale-98 cursor-pointer"
+              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-md bg-[#00a651] hover:bg-[#008f45] px-4 sm:px-8 py-3.5 text-sm sm:text-base font-bold text-white shadow-sm hover:shadow-md transition-all active:scale-98 cursor-pointer"
             >
               <span>Edit a PDF document - it's free</span>
               <ChevronRight className="h-5 w-5" />
@@ -366,7 +366,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
                         key={`${tool.name}_${tIdx}`}
                         onClick={() => {
                           if (tool.id === 'ai_scanner') {
-                            onOpenDocuMindScanner();
+                            onOpenUpload();
                           } else {
                             onSelectTool(tool.id);
                           }
@@ -413,14 +413,14 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
           </div>
 
           {/* 6. DUAL PLATFORM: WEB & DESKTOP (Page 7 of PDF) */}
-          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Sejda Web */}
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
+            {/* DocMind AI Web */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between text-center">
               <div>
                 <div className="w-12 h-12 mx-auto rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
                   <Globe className="h-6 w-6" />
                 </div>
-                <h4 className="text-lg font-bold text-slate-900">DocuMind Web</h4>
+                <h4 className="text-lg font-bold text-slate-900">DocMind AI Web</h4>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
                   Works in the browser. Our servers process the files for you. Files stay secure. After processing, they are permanently deleted.
                 </p>
@@ -434,19 +434,19 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
               </button>
             </div>
 
-            {/* Sejda Desktop */}
+            {/* DocMind AI Desktop */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between text-center">
               <div>
                 <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-[#00a651] flex items-center justify-center mb-3">
                   <Monitor className="h-6 w-6" />
                 </div>
-                <h4 className="text-lg font-bold text-slate-900">DocuMind Desktop</h4>
+                <h4 className="text-lg font-bold text-slate-900">DocMind AI Desktop</h4>
                 <p className="mt-2 text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
                   Works offline. Same features as the online service, and the files never leave your computer. Compatible with MacOS, Windows and Linux.
                 </p>
               </div>
               <button
-                onClick={() => alert('DocuMind Desktop application package is available on our releases page.')}
+                onClick={() => alert('DocMind AI Desktop application package is available on our releases page.')}
                 className="mt-6 inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:underline"
               >
                 <span>Download now — it's free</span>
@@ -467,7 +467,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
             </div>
 
             {/* Guide category selector pills */}
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+            <div className="no-scrollbar mb-8 flex max-w-full items-center justify-start gap-2 overflow-x-auto sm:flex-wrap sm:justify-center">
               {[
                 { id: 'edit', label: 'How to edit PDF' },
                 { id: 'word', label: 'How to convert to Word' },
@@ -480,7 +480,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveGuideTab(tab.id as any)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     activeGuideTab === tab.id
                       ? 'bg-[#00a651] text-white shadow-2xs'
                       : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
@@ -653,7 +653,7 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
         </div>
       </div>
 
-      {/* 8. COMPLETE SEJDA LOWER FOOTER (Pages 13-18 of PDF) */}
+      {/* 8. COMPLETE PDF LOWER FOOTER (Pages 13-18 of PDF) */}
       <footer className="bg-white border-t border-slate-200 text-slate-600 text-xs pt-12 pb-16 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Column 1: Resources */}
@@ -718,11 +718,11 @@ export const SejdaToolsGrid: React.FC<SejdaToolsGridProps> = ({
               Contact
             </h5>
             <p className="text-slate-500 text-xs">
-              <span className="font-mono text-slate-700">hi@documind.com</span>
+              <span className="font-mono text-slate-700">support@docmind.ai</span>
             </p>
             <div className="mt-4 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
               <p>Made in Amsterdam</p>
-              <p className="mt-0.5">© DocuMind BV 2013-present.</p>
+              <p className="mt-0.5">© DocMind AI Inc.</p>
               <p className="mt-0.5 text-slate-400">Thank you for your time.</p>
             </div>
           </div>

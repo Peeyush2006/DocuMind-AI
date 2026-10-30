@@ -91,8 +91,8 @@ export const OrganizePdfModal: React.FC<OrganizePdfModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-900/10 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto">
+      <div className="relative w-full max-w-4xl rounded-2xl bg-white p-3 sm:p-6 shadow-2xl ring-1 ring-slate-900/10 max-h-[94vh] overflow-y-auto flex flex-col">
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 rounded-lg p-1.5"
