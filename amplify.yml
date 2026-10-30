@@ -1,7 +1,7 @@
 version: 1
 env:
   variables:
-    VITE_API_BASE_URL: https://peeyush2006-documind-api.onrender.com
+    VITE_API_BASE_URL: https://documind-ai-9685.onrender.com
 
 frontend:
   phases:
