@@ -1,0 +1,28 @@
+--- Page 1 ---
+Sample Tax Invoice
+Doc 61363899Bb Enhanced
+Extracted document intelligence stream for 'doc_61363899bb_enhanced.png'. The scan has been enhanced
+using bilateral filtering, perspective homography correction, and adaptive histogram equalization.
+Section 1: Executive Information
+This document contains structured textual information processed through DocuMind AI's extraction pipeline.
+Notice how uncertain tokens or low-confidence characters are preserved with optical coordinates for
+side-by-side inspection.
+Field Name
+Extracted Value
+Confidence
+Status
+Document Title
+Doc 61363899Bb
+Enhanced
+99%
+Verified
+Processing Timestamp
+2026-10-30
+96%
+Verified
+OCR Engine
+DocuMind Hybrid Core
+92%
+Verified
+All content can be edited in real-time, verified against the original photograph, and exported directly into DOCX,
+PDF, XLSX, or plain text.

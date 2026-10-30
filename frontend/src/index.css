@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8fafc;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom TipTap Editor styling */
+.ProseMirror {
+  outline: none;
+  min-height: 500px;
+  padding: 1.5rem;
+  line-height: 1.7;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.85rem;
+}
+
+.ProseMirror h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-top: 1.25rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.3rem;
+}
+
+.ProseMirror h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #334155;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  width: 100%;
+  overflow-x: auto;
+  display: table;
+}
+
+.ProseMirror th {
+  background-color: #f8fafc;
+  font-weight: 600;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.ProseMirror td {
+  padding: 0.55rem 0.85rem;
+  border: 1px solid #e2e8f0;
+}
+
+.ProseMirror tr:nth-child(even) td {
+  background-color: #fbfcfe;
+}
+
+/* Uncertain OCR token highlighted for human verification */
+.ocr-uncertain {
+  background-color: #fef3c7;
+  color: #92400e;
+  border-bottom: 2px dashed #f59e0b;
+  padding: 0 3px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.ocr-uncertain:hover {
+  background-color: #fde68a;
+  color: #78350f;
+  transform: translateY(-1px);
+}
+
+.ocr-uncertain-selected {
+  background-color: #fcd34d !important;
+  color: #000000 !important;
+  box-shadow: 0 0 0 2px #d97706;
+}
