@@ -1,7 +1,7 @@
 version: 1
 env:
   variables:
-    VITE_API_BASE_URL: https://crazy-beers-kiss.loca.lt
+    VITE_API_BASE_URL: https://peeyush2006-documind-api.onrender.com
 
 frontend:
   phases:

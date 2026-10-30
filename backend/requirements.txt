@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pymupdf
+pillow
+numpy
+opencv-python-headless
+pytz
+beautifulsoup4
+python-docx
+reportlab
+openpyxl
+pypdf
+pdfplumber
