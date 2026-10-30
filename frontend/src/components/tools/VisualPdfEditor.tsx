@@ -1156,7 +1156,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       </div>
 
       {/* 4. MAIN CANVAS WORKSPACE */}
-      <div className="flex-1 overflow-auto pt-10 px-8 flex items-start justify-center relative pb-28">
+      <div className="min-h-0 min-w-0 flex-1 overflow-auto pt-5 sm:pt-10 px-2 sm:px-8 flex items-start justify-center relative pb-36 sm:pb-28">
         <div
           ref={pageContainerRef}
           onClick={handlePageClick}
@@ -1169,7 +1169,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
               ref={imgRef}
               src={currentPage.image_url}
               alt={`Page ${currentPageIndex + 1}`}
-              className="max-h-[82vh] w-auto pointer-events-none block"
+              className="max-h-[70vh] max-w-[calc(100vw-1rem)] w-auto object-contain md:max-h-[82vh] md:max-w-none pointer-events-none block"
               onLoad={updatePageScale}
             />
           )}
