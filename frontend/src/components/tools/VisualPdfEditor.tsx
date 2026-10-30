@@ -324,7 +324,24 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       setAnnotations((prev) => [...prev, newAnnot]);
       setSelectedAnnotId(newAnnot.id);
     } else if (activeTool === 'text') {
+      // Clicking empty page space with the Text tool creates a new editable text box.
+      pushUndo();
       setActiveSpanId(null);
+      const newAnnot: CustomAnnotation = {
+        id: `text_${Date.now()}`,
+        type: 'text',
+        page_index: currentPageIndex,
+        x,
+        y,
+        width: 0.28,
+        height: 0.045,
+        text: '',
+        font_size: 14,
+        font_name: 'Helvetica',
+        color: '#000000'
+      };
+      setAnnotations((prev) => [...prev, newAnnot]);
+      setSelectedAnnotId(newAnnot.id);
     }
   };
 
@@ -1439,6 +1456,26 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   </div>
                 )}
 
+                {/* New text */}
+                {annot.type === 'text' && (
+                  <input
+                    type="text"
+                    autoFocus={isSelected && !annot.text}
+                    value={annot.text || ''}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      setAnnotations((prev) => prev.map((a) => a.id === annot.id ? { ...a, text } : a));
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.currentTarget as HTMLInputElement).blur();
+                    }}
+                    placeholder="Type text..."
+                    className="w-full h-full min-h-6 bg-white/90 border border-blue-400 px-1 outline-none text-slate-900 placeholder:text-slate-400"
+                    style={{ fontSize: `${getVisualFontSize(annot.font_size || 14)}px`, color: annot.color || '#000000' }}
+                  />
+                )}
+
                 {/* Form field: checkbox */}
                 {annot.type === 'form_field' && annot.field_type === 'checkbox' && (
                   <div
@@ -1720,8 +1757,8 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
       {/* Download Result Dialog */}
       {downloadResult && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 text-slate-900 shadow-2xl border border-slate-200 text-center">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 p-3 sm:p-4">
+          <div className="w-full max-w-md min-w-0 rounded-xl bg-white p-4 sm:p-6 text-slate-900 shadow-2xl border border-slate-200 text-center">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-[#00a651] mb-3">
               <Check className="h-6 w-6" />
             </div>
@@ -1729,18 +1766,21 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             <p className="mt-1 text-xs text-slate-500">
               All modifications have been saved in the exact original font and layout.
             </p>
-            <div className="mt-6 flex flex-col gap-2">
+            <p className="mt-3 mx-auto max-w-full truncate rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600" title={downloadResult.filename}>
+              {downloadResult.filename}
+            </p>
+            <div className="mt-4 flex min-w-0 flex-col gap-2">
               <a
                 href={downloadResult.download_url}
                 download={downloadResult.filename}
-                className="flex items-center justify-center gap-2 rounded-md bg-[#00a651] py-2.5 text-xs font-semibold text-white hover:bg-[#008f45] shadow-sm"
+                className="flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-[#00a651] px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#008f45]"
               >
-                <Download className="h-4 w-4" />
-                <span>Download {downloadResult.filename}</span>
+                <Download className="h-4 w-4 shrink-0" />
+                <span>Download PDF</span>
               </a>
               <button
                 onClick={() => setDownloadResult(null)}
-                className="rounded-md border border-slate-200 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                className="min-h-10 w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
               >
                 Continue editing
               </button>
