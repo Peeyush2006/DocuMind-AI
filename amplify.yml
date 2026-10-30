@@ -1,4 +1,7 @@
 version: 1
+env:
+  variables:
+    VITE_API_BASE_URL: https://crazy-beers-kiss.loca.lt
 
 frontend:
   phases:

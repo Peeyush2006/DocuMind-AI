@@ -33,7 +33,7 @@ import {
   Minus,
   CheckSquare
 } from 'lucide-react';
-import { api } from '../../api/client';
+import { api, backendFetch, backendUrl } from '../../api/client';
 
 interface TextSpan {
   id: string;
@@ -183,7 +183,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
         try {
           setLoading(true);
           const converted = await api.imagesToPdf([f]);
-          const res = await fetch(converted.download_url);
+          const res = await backendFetch(converted.download_url);
           const blob = await res.blob();
           const pdfFile = new File([blob], `${f.name.replace(/\.[^/.]+$/, '')}.pdf`, { type: 'application/pdf' });
           await loadPdf(pdfFile);
@@ -201,18 +201,18 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   const loadSampleInvoice = async () => {
     try {
       setLoading(true);
-      const resPdf = await fetch('/storage/samples/sample_tax_invoice.pdf');
+      const resPdf = await backendFetch(backendUrl('/storage/samples/sample_tax_invoice.pdf'));
       if (resPdf.ok) {
         const pdfBlob = await resPdf.blob();
         const pdfFile = new File([pdfBlob], 'sample_tax_invoice.pdf', { type: 'application/pdf' });
         await loadPdf(pdfFile);
         return;
       }
-      const res = await fetch('/storage/samples/sample_tax_invoice.png');
+      const res = await backendFetch(backendUrl('/storage/samples/sample_tax_invoice.png'));
       const blob = await res.blob();
       const sampleImg = new File([blob], 'sample_tax_invoice.png', { type: 'image/png' });
       const converted = await api.imagesToPdf([sampleImg]);
-      const resConverted = await fetch(converted.download_url);
+      const resConverted = await backendFetch(converted.download_url);
       const pdfBlob = await resConverted.blob();
       const pdfFile = new File([pdfBlob], 'sample_tax_invoice.pdf', { type: 'application/pdf' });
       await loadPdf(pdfFile);
