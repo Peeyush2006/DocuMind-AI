@@ -71,6 +71,15 @@ app.mount("/storage/processed", StaticFiles(directory=str(PROCESSED_DIR)), name=
 app.mount("/storage/exports", StaticFiles(directory=str(EXPORTS_DIR)), name="exports")
 app.mount("/storage/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="samples")
 
+@app.get("/")
+def api_root():
+    return {
+        "service": "DocuMind AI Platform API",
+        "status": "online",
+        "health": "/api/health",
+        "docs": "/docs",
+    }
+
 @app.get("/api/health")
 def health_check():
     return {
