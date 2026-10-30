@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
 from app.config import (
     BASE_DIR, STORAGE_DIR, UPLOADS_DIR, PROCESSED_DIR, EXPORTS_DIR, SAMPLES_DIR,
@@ -73,12 +73,10 @@ app.mount("/storage/samples", StaticFiles(directory=str(SAMPLES_DIR)), name="sam
 
 @app.get("/")
 def api_root():
-    return {
-        "service": "DocuMind AI Platform API",
-        "status": "online",
-        "health": "/api/health",
-        "docs": "/docs",
-    }
+    return RedirectResponse(
+        url="https://main.d3sxcjwd3wtri0.amplifyapp.com/",
+        status_code=307,
+    )
 
 @app.get("/api/health")
 def health_check():
