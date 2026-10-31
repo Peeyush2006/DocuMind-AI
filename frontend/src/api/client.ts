@@ -367,7 +367,17 @@ export const api = {
       method: 'POST',
       body: fd
     });
-    if (!res.ok) throw new Error('Failed to save edited PDF');
+    if (!res.ok) {
+      let detail = '';
+      const errorResponse = res.clone();
+      try {
+        const payload = await res.json();
+        detail = typeof payload.detail === 'string' ? payload.detail : '';
+      } catch {
+        detail = (await errorResponse.text()).slice(0, 240);
+      }
+      throw new Error(detail || `The server could not save this PDF (HTTP ${res.status}).`);
+    }
     return res.json().then(resolveBackendStorageUrls);
   },
 

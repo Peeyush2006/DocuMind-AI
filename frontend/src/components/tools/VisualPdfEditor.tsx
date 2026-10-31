@@ -560,7 +560,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       setDownloadResult(res);
     } catch (e) {
       console.error(e);
-      alert('Failed to save edited PDF');
+      alert(e instanceof Error ? e.message : 'Failed to save edited PDF');
     } finally {
       setSaving(false);
     }
