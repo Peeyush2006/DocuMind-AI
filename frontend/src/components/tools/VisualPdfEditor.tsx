@@ -1517,7 +1517,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === 'Escape') setActiveSpanId(null);
                     }}
-                    className="w-full h-full px-0.5 m-0 border border-blue-500 border-dashed rounded-none outline-none leading-none shadow-sm"
+                    className="box-border w-full h-full px-0.5 py-0 m-0 border border-blue-500 border-dashed rounded-none outline-none leading-none shadow-sm"
                     style={{
                       backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
@@ -1525,7 +1525,8 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                       fontWeight: span.is_bold ? 'bold' : 'normal',
                       fontStyle: span.is_italic ? 'italic' : 'normal',
                       color: span.color,
-                      lineHeight: 1
+                      lineHeight: `${visualFontSize}px`,
+                      verticalAlign: 'top'
                     }}
                   />
                 </div>
@@ -1556,7 +1557,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                 {/* Render modified or cleared text */}
                 {isModified && (
                   <div
-                    className="inline-flex w-max min-w-full h-full items-center px-0.5 overflow-visible"
+                    className="inline-flex w-max min-w-full h-full items-start px-0.5 overflow-visible"
                     style={{
                       backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
