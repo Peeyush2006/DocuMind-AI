@@ -153,8 +153,6 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   // Saving & Download state
   const [saving, setSaving] = useState(false);
   const [downloadResult, setDownloadResult] = useState<{ download_url: string; filename: string } | null>(null);
-  const [downloadingResult, setDownloadingResult] = useState(false);
-  const [downloadError, setDownloadError] = useState('');
 
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -657,31 +655,6 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       alert(e instanceof Error ? e.message : 'Failed to save edited PDF');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleDownloadResult = async () => {
-    if (!downloadResult || downloadingResult) return;
-    try {
-      setDownloadingResult(true);
-      setDownloadError('');
-      const response = await backendFetch(downloadResult.download_url);
-      if (!response.ok) throw new Error(`Download failed (${response.status})`);
-
-      const fileBlob = await response.blob();
-      const objectUrl = URL.createObjectURL(fileBlob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = downloadResult.filename || 'edited-document.pdf';
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
-    } catch (error) {
-      console.error('Failed to download edited PDF:', error);
-      setDownloadError('Could not download the PDF. Please try again.');
-    } finally {
-      setDownloadingResult(false);
     }
   };
 
@@ -1956,16 +1929,14 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
               {downloadResult.filename}
             </p>
             <div className="mt-4 flex min-w-0 flex-col gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadResult}
-                disabled={downloadingResult}
-                className="flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-[#00a651] px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#008f45] disabled:cursor-wait disabled:opacity-70"
+              <a
+                href={backendUrl(`/api/pdf/download/${encodeURIComponent(downloadResult.filename)}`)}
+                download={downloadResult.filename}
+                className="flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-[#00a651] px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#008f45]"
               >
                 <Download className="h-4 w-4 shrink-0" />
-                <span>{downloadingResult ? 'Preparing download…' : 'Download PDF'}</span>
-              </button>
-              {downloadError && <p role="alert" className="text-xs text-red-600">{downloadError}</p>}
+                <span>Download PDF</span>
+              </a>
               <button
                 onClick={() => setDownloadResult(null)}
                 className="min-h-10 w-full rounded-md border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"

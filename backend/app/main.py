@@ -710,6 +710,28 @@ async def api_edit_save_pdf(file: UploadFile = File(...), annotations: str = For
     result = apply_pdf_editor_annotations(str(p), str(out_path), annot_list)
     return result
 
+@app.get("/api/pdf/download/{filename}")
+async def api_download_edited_pdf(filename: str):
+    safe_filename = Path(filename).name
+    if (
+        safe_filename != filename
+        or "/" in filename
+        or "\\" in filename
+        or not safe_filename.lower().endswith(".pdf")
+    ):
+        raise HTTPException(status_code=400, detail="Invalid PDF filename")
+
+    pdf_path = EXPORTS_DIR / safe_filename
+    if not pdf_path.is_file():
+        raise HTTPException(status_code=404, detail="Edited PDF not found. It may have expired; apply the changes again.")
+
+    return FileResponse(
+        path=str(pdf_path),
+        media_type="application/pdf",
+        filename=safe_filename,
+        content_disposition_type="attachment"
+    )
+
 @app.post("/api/pdf/clear-template")
 async def api_clear_pdf_template(file: UploadFile = File(...)):
     pid = f"clrtpl_{uuid.uuid4().hex[:8]}"
