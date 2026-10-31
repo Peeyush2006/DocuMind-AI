@@ -1293,8 +1293,8 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             />
           )}
 
-          {/* Cover the original scan text where an extracted text span was moved. */}
-          {currentPage && currentSpans.filter((span) => span.position_modified).map((span) => (
+          {/* Cover original scan glyphs while an extracted span is replaced or moved. */}
+          {currentPage && currentSpans.filter((span) => span.position_modified || span.text !== span.original_text).map((span) => (
             <div
               key={`moved-span-cover-${span.id}`}
               className="absolute z-10 pointer-events-none"
@@ -1454,6 +1454,15 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             const previewWidthPercent = pageWidth
               ? Math.max(span.width * 100, (previewTextWidthPx / pageWidth) * 100)
               : span.width * 100;
+            const baselineTopPercent = currentPage
+              ? (span.origin_y - (span.font_size * 0.8) / currentPage.height) * 100
+              : span.y * 100;
+            const inputTopPercent = currentPage
+              ? (span.origin_y - (span.font_size * 0.9) / currentPage.height) * 100
+              : span.y * 100;
+            const textBoxHeightPercent = currentPage
+              ? Math.max(span.height, (span.font_size * 1.2) / currentPage.height) * 100
+              : span.height * 100;
 
             if (isActive) {
               return (
@@ -1461,10 +1470,10 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   key={span.id}
                   className="absolute z-40"
                   style={{
-                    left: `${span.x * 100}%`,
-                    top: `${span.y * 100}%`,
+                    left: `${span.origin_x * 100}%`,
+                    top: `${inputTopPercent}%`,
                     width: `${Math.min(editorWidthPercent, availableWidthPercent)}%`,
-                    height: `${span.height * 100}%`
+                    height: `${textBoxHeightPercent}%`
                   }}
                 >
                   <button
@@ -1519,26 +1528,25 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     : 'hover:bg-blue-500/5 hover:outline hover:outline-1 hover:outline-blue-400/30 hover:outline-dashed'
                 }`}
                 style={{
-                  left: `${span.x * 100}%`,
-                  top: `${span.y * 100}%`,
-                  width: `${Math.min(previewWidthPercent, availableWidthPercent)}%`,
-                  height: `${span.height * 100}%`,
-                  backgroundColor: isModified ? (span.bg_color || '#ffffff') : 'transparent'
+                  left: `${(isModified ? span.origin_x : span.x) * 100}%`,
+                  top: `${isModified ? baselineTopPercent : span.y * 100}%`,
+                  width: `${isModified ? Math.min(previewWidthPercent, availableWidthPercent) : span.width * 100}%`,
+                  height: `${isModified ? textBoxHeightPercent : span.height * 100}%`,
+                  backgroundColor: 'transparent'
                 }}
                 title={`Click to edit text: ${span.font_name} ${span.font_size}pt`}
               >
                 {/* Render modified or cleared text */}
                 {isModified && (
                   <div
-                    className="inline-flex w-max min-w-full h-full items-start px-0.5 overflow-visible"
+                    className="block w-max min-w-full h-full overflow-visible"
                     style={{
-                      backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
                       fontSize: `${visualFontSize}px`,
                       fontWeight: span.is_bold ? 'bold' : 'normal',
                       fontStyle: span.is_italic ? 'italic' : 'normal',
                       color: span.color,
-                      lineHeight: 1
+                      lineHeight: `${visualFontSize}px`
                     }}
                   >
                     {span.text !== '' ? (
