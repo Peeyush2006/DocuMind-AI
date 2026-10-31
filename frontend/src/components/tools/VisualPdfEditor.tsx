@@ -458,6 +458,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     const drag = spanDragRef.current;
     if (!drag || e.pointerId !== drag.pointerId) return;
     e.preventDefault();
+    if (Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) < 6) return;
     const current = (spansByPage[currentPageIndex] || []).find((span) => span.id === drag.id);
     if (!current) return;
     const x = Math.max(0, Math.min(1 - current.width, drag.startX + (e.clientX - drag.startClientX) / drag.rectWidth));
@@ -471,8 +472,8 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             ...span,
             x,
             y,
-            origin_x: span.origin_x + dx,
-            origin_y: span.origin_y + dy,
+            origin_x: drag.origin[0] / drag.pageWidth + dx,
+            origin_y: drag.origin[1] / drag.pageHeight + dy,
             pt_origin: [drag.origin[0] + dx * drag.pageWidth, drag.origin[1] + dy * drag.pageHeight],
             position_modified: true
           }
@@ -504,6 +505,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     const drag = annotationDragRef.current;
     if (!drag || e.pointerId !== drag.pointerId) return;
     e.preventDefault();
+    if (Math.hypot(e.clientX - drag.startClientX, e.clientY - drag.startClientY) < 6) return;
     setAnnotations((prev) => prev.map((annot) => annot.id === drag.id ? {
       ...annot,
       x: Math.max(0, Math.min(1 - annot.width, drag.startX + (e.clientX - drag.startClientX) / drag.rectWidth)),
