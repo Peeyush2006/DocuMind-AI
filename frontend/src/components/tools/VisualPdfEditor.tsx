@@ -167,13 +167,13 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   }, []);
 
   // Load PDF file into editor
-  const loadPdf = async (f: File) => {
+  const loadPdf = async (f: File, pageToOpen = 0): Promise<boolean> => {
     try {
       setLoading(true);
-      setFile(f);
       const meta = await api.renderPdfPages(f);
+      setFile(f);
       setPdfMeta(meta);
-      setCurrentPageIndex(0);
+      setCurrentPageIndex(Math.min(pageToOpen, Math.max(0, meta.pages.length - 1)));
 
       // Group detected spans by page
       const grouped: { [page: number]: TextSpan[] } = {};
@@ -192,9 +192,11 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       setAnnotations([]);
       setActiveSpanId(null);
       setUndoHistory([]);
+      return true;
     } catch (err) {
       console.error(err);
       alert('Failed to load PDF. Please ensure it is a valid PDF file.');
+      return false;
     } finally {
       setLoading(false);
     }
@@ -619,7 +621,22 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
       const allAnnotationsToApply = [...replacementAnnotations, ...annotations];
       const res = await api.editSavePdf(file, allAnnotationsToApply);
+      // Show the backend-rendered PDF in the editor so its live preview and
+      // downloaded version use the exact same saved page content.
+      let previewRefreshed = false;
+      try {
+        const savedPdfResponse = await backendFetch(res.download_url);
+        if (!savedPdfResponse.ok) throw new Error('Could not load the saved PDF preview.');
+        const savedPdf = await savedPdfResponse.blob();
+        const savedFile = new File([savedPdf], res.download_filename || res.filename, { type: 'application/pdf' });
+        previewRefreshed = await loadPdf(savedFile, currentPageIndex);
+      } catch (previewError) {
+        console.error('Saved PDF preview refresh failed:', previewError);
+      }
       setDownloadResult(res);
+      if (!previewRefreshed) {
+        alert('Your PDF was saved and is ready to download, but the live preview could not refresh.');
+      }
     } catch (e) {
       console.error(e);
       alert(e instanceof Error ? e.message : 'Failed to save edited PDF');
