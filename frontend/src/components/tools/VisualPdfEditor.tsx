@@ -1354,6 +1354,12 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             const isActive = activeSpanId === span.id;
             const isModified = span.text !== span.original_text;
             const visualFontSize = getVisualFontSize(span.font_size);
+            const pageWidth = pageContainerRef.current?.clientWidth || 0;
+            const editorWidthPx = Math.max(24, span.text.length * visualFontSize * 0.62 + 12);
+            const editorWidthPercent = pageWidth
+              ? Math.max(span.width * 100, (editorWidthPx / pageWidth) * 100)
+              : span.width * 100;
+            const availableWidthPercent = Math.max(1, (1 - span.x) * 100);
 
             if (isActive) {
               return (
@@ -1363,7 +1369,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   style={{
                     left: `${span.x * 100}%`,
                     top: `${span.y * 100}%`,
-                    width: `${Math.max(span.width * 100, 10)}%`,
+                    width: `${Math.min(editorWidthPercent, availableWidthPercent)}%`,
                     height: `${span.height * 100}%`
                   }}
                 >
@@ -1414,7 +1420,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                 {/* Render modified or cleared text */}
                 {isModified && (
                   <div
-                    className="w-full h-full flex items-center px-0.5 overflow-hidden"
+                    className="inline-flex w-max min-w-full h-full items-center px-0.5 overflow-visible"
                     style={{
                       backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
@@ -1426,7 +1432,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     }}
                   >
                     {span.text !== '' ? (
-                      <span className="truncate whitespace-nowrap">{span.text}</span>
+                      <span className="whitespace-nowrap">{span.text}</span>
                     ) : (
                       <span
                         className="text-slate-300 italic font-normal truncate select-none text-[9px]"
