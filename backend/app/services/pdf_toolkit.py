@@ -68,6 +68,32 @@ def map_font_name_to_fitz(font_name: str, is_bold: bool = False, is_italic: bool
         else:
             return "helv"
 
+
+def find_page_font_reference(page_fonts, font_name: str) -> Optional[str]:
+    """Return the PDF font resource matching an extracted span's font name."""
+    def normalize(name: str) -> str:
+        name = (name or "").split("+")[-1].lower()
+        return "".join(char for char in name if char.isalnum())
+
+    target = normalize(font_name)
+    if not target:
+        return None
+
+    partial_matches = []
+    for font in page_fonts:
+        if len(font) < 5:
+            continue
+        resource_name = font[4]
+        base_name = normalize(font[3])
+        if not resource_name or not base_name:
+            continue
+        if target == base_name:
+            return f"/{resource_name}"
+        if min(len(target), len(base_name)) >= 6 and (target in base_name or base_name in target):
+            partial_matches.append(f"/{resource_name}")
+
+    return partial_matches[0] if len(partial_matches) == 1 else None
+
 def sample_span_bg(pix, bbox, pw: float, ph: float) -> str:
     """Samples the background color immediately surrounding the text bbox to detect colored banners/headers"""
     if not pix:
@@ -513,6 +539,8 @@ def apply_pdf_editor_annotations(
     - Highlights
     """
     doc = fitz.open(file_path)
+    # Preserve the source font resource map before redactions alter page content.
+    page_font_resources = {index: page.get_fonts(full=True) for index, page in enumerate(doc)}
 
     # First pass: apply redactions/whiteouts for text replacements
     for item in annotations:
@@ -591,9 +619,26 @@ def apply_pdf_editor_annotations(
             else:
                 pt = fitz.Point(item.get("x", 0) * pw, (item.get("y", 0) + item.get("height", 0.03)) * ph - 2)
 
-            # Check if matching TrueType font file is available
+            # Reuse the embedded page font first. Production runs on Linux, so
+            # the Windows font lookup below is usually unavailable on Render.
+            source_font = find_page_font_reference(page_font_resources.get(p_idx, []), font_name)
             font_path = get_system_font_path(font_name, is_bold=is_bold, is_italic=is_italic)
-            if font_path:
+            inserted_with_source_font = False
+            if source_font:
+                try:
+                    page.insert_text(
+                        pt,
+                        new_text,
+                        fontname=source_font,
+                        fontsize=font_size,
+                        color=(r, g, b)
+                    )
+                    inserted_with_source_font = True
+                except Exception:
+                    # Some subset fonts cannot encode newly added characters.
+                    # Fall back to an installed font for those replacements.
+                    pass
+            if not inserted_with_source_font and font_path:
                 clean_fid = f"F_{Path(font_path).stem}_{abs(hash(font_path)) % 1000}"
                 page.insert_text(
                     pt,
@@ -603,7 +648,7 @@ def apply_pdf_editor_annotations(
                     fontsize=font_size,
                     color=(r, g, b)
                 )
-            else:
+            elif not inserted_with_source_font:
                 fitz_font = map_font_name_to_fitz(font_name, is_bold=is_bold, is_italic=is_italic)
                 page.insert_text(pt, new_text, fontname=fitz_font, fontsize=font_size, color=(r, g, b))
 
