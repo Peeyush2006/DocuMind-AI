@@ -158,6 +158,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  const textMeasureCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [pageScale, setPageScale] = useState<number>(1);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 639px)').matches);
 
@@ -725,6 +726,14 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     }
     const px = ptSize * scale;
     return Math.max(1, Math.round(px * 100) / 100);
+  };
+
+  const getSpanTextWidth = (span: TextSpan, fontSizePx: number) => {
+    if (!textMeasureCanvasRef.current) textMeasureCanvasRef.current = document.createElement('canvas');
+    const context = textMeasureCanvasRef.current.getContext('2d');
+    if (!context) return span.text.length * fontSizePx * 0.7 + 8;
+    context.font = `${span.is_italic ? 'italic ' : ''}${span.is_bold ? 'bold ' : ''}${fontSizePx}px ${span.font_family}`;
+    return Math.ceil(context.measureText(span.text).width + 10);
   };
 
   // -------------------------------------------------------------
@@ -1466,6 +1475,10 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
               ? Math.max(span.width * 100, (editorWidthPx / pageWidth) * 100)
               : span.width * 100;
             const availableWidthPercent = Math.max(1, (1 - span.x) * 100);
+            const previewTextWidthPx = isModified && span.text ? getSpanTextWidth(span, visualFontSize) : 0;
+            const previewWidthPercent = pageWidth
+              ? Math.max(span.width * 100, (previewTextWidthPx / pageWidth) * 100)
+              : span.width * 100;
 
             if (isActive) {
               return (
@@ -1532,7 +1545,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                 style={{
                   left: `${span.x * 100}%`,
                   top: `${span.y * 100}%`,
-                  width: `${span.width * 100}%`,
+                  width: `${Math.min(previewWidthPercent, availableWidthPercent)}%`,
                   height: `${span.height * 100}%`,
                   backgroundColor: isModified ? (span.bg_color || '#ffffff') : 'transparent'
                 }}
