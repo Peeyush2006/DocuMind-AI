@@ -646,6 +646,21 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     return Math.max(1, Math.round(px * 100) / 100);
   };
 
+  const getSpanFitFontSize = (span: TextSpan, text: string) => {
+    const baseSize = getVisualFontSize(span.font_size);
+    const imageWidth = imgRef.current?.clientWidth || 0;
+    if (!text || !imageWidth || !span.width) return baseSize;
+
+    const context = document.createElement('canvas').getContext('2d');
+    if (!context) return baseSize;
+    context.font = `${span.is_italic ? 'italic ' : ''}${span.is_bold ? 'bold ' : ''}${baseSize}px ${span.font_family}`;
+    const measuredWidth = context.measureText(text).width;
+    const availableWidth = span.width * imageWidth - 2;
+    return measuredWidth > availableWidth && availableWidth > 0
+      ? Math.max(1, baseSize * (availableWidth / measuredWidth))
+      : baseSize;
+  };
+
   // -------------------------------------------------------------
   // LANDING VIEW (Matches Screenshot 2 when no PDF is loaded yet)
   // -------------------------------------------------------------
@@ -1363,7 +1378,6 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {currentSpans.map((span) => {
             const isActive = activeSpanId === span.id;
             const isModified = span.text !== span.original_text;
-            const visualFontSize = getVisualFontSize(span.font_size);
 
             if (isActive) {
               return (
@@ -1373,7 +1387,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   style={{
                     left: `${span.x * 100}%`,
                     top: `${span.y * 100}%`,
-                    width: `${Math.max(span.width * 100, 10)}%`,
+                    width: `${span.width * 100}%`,
                     height: `${span.height * 100}%`
                   }}
                 >
@@ -1389,7 +1403,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     style={{
                       backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
-                      fontSize: `${visualFontSize}px`,
+                      fontSize: `${getSpanFitFontSize(span, span.text)}px`,
                       fontWeight: span.is_bold ? 'bold' : 'normal',
                       fontStyle: span.is_italic ? 'italic' : 'normal',
                       color: span.color,
@@ -1428,7 +1442,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     style={{
                       backgroundColor: span.bg_color || '#ffffff',
                       fontFamily: span.font_family,
-                      fontSize: `${visualFontSize}px`,
+                      fontSize: `${getSpanFitFontSize(span, span.text)}px`,
                       fontWeight: span.is_bold ? 'bold' : 'normal',
                       fontStyle: span.is_italic ? 'italic' : 'normal',
                       color: span.color,

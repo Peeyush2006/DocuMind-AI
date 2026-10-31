@@ -654,9 +654,24 @@ def apply_pdf_editor_annotations(
 
             # Do not insert through the PDF's original font resource. Subset
             # fonts often have custom encodings, which can turn replacement
-            # text into unrelated glyphs. Use a real local font instead; the
-            # extracted point size and baseline remain unchanged.
+            # text into unrelated glyphs. Use a real local font instead and
+            # preserve the extracted baseline.
             font_path = get_system_font_path(font_name, is_bold=is_bold, is_italic=is_italic)
+            max_width = (
+                max(0.0, float(item["pt_bbox"][2]) - float(item["pt_bbox"][0]) - 1.0)
+                if isinstance(item.get("pt_bbox"), (list, tuple)) and len(item["pt_bbox"]) >= 4
+                else max(0.0, float(item.get("width", 0.1)) * pw - 1.0)
+            )
+            try:
+                measure_font = fitz.Font(fontfile=font_path) if font_path else fitz.Font(fontname=fitz_font)
+                requested_width = measure_font.text_length(new_text, fontsize=font_size)
+                # Keep the original font size unless the replacement would
+                # exceed its source field. Longer text is reduced to fit; it
+                # is never enlarged to fill the box.
+                if requested_width > max_width > 0:
+                    font_size *= max_width / requested_width
+            except Exception:
+                pass
             if font_path:
                 clean_fid = f"F_{Path(font_path).stem}_{abs(hash(font_path)) % 1000}"
                 page.insert_text(
