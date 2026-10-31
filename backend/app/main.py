@@ -2,6 +2,7 @@ import os
 import shutil
 import uuid
 import fitz
+import base64
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
@@ -712,6 +713,43 @@ async def api_edit_save_pdf(file: UploadFile = File(...), annotations: str = For
     safe_stem = "".join(ch for ch in source_stem if ch.isalnum() or ch in "-_ ").strip(" ._- ") or "document"
     result["download_filename"] = f"Edited_{safe_stem}.pdf"
     return result
+
+@app.post("/api/pdf/preview-edits")
+async def api_preview_pdf_edits(
+    file: UploadFile = File(...),
+    annotations: str = Form(...),
+    page_index: int = Form(0),
+):
+    """Render a single-page preview using the same edit pipeline as PDF export."""
+    if Path(file.filename or "").suffix.lower() != ".pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    try:
+        annot_list = json.loads(annotations)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=400, detail="Invalid edit data") from exc
+    if not isinstance(annot_list, list):
+        raise HTTPException(status_code=400, detail="Invalid edit data")
+
+    preview_id = uuid.uuid4().hex
+    source_path = UPLOADS_DIR / f"preview_{preview_id}.pdf"
+    output_path = PROCESSED_DIR / f"preview_{preview_id}.pdf"
+    try:
+        with open(source_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        apply_pdf_editor_annotations(str(source_path), str(output_path), annot_list)
+
+        with fitz.open(output_path) as preview_doc:
+            if page_index < 0 or page_index >= len(preview_doc):
+                raise HTTPException(status_code=400, detail="Invalid preview page")
+            pixmap = preview_doc[page_index].get_pixmap(dpi=130, alpha=False)
+            image_data = base64.b64encode(pixmap.tobytes("png")).decode("ascii")
+        return {
+            "page_index": page_index,
+            "image_data_url": f"data:image/png;base64,{image_data}",
+        }
+    finally:
+        source_path.unlink(missing_ok=True)
+        output_path.unlink(missing_ok=True)
 
 @app.get("/api/pdf/download/{filename}")
 async def api_download_edited_pdf(filename: str, download_name: Optional[str] = None):

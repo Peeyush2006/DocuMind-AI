@@ -106,6 +106,37 @@ interface VisualPdfEditorProps {
   onClose: () => void;
 }
 
+const hasTextSpanChanges = (span: TextSpan) =>
+  span.text !== span.original_text ||
+  span.font_name !== span.original_font_name ||
+  span.font_family !== span.original_font_family ||
+  span.font_size !== span.original_font_size ||
+  span.is_bold !== span.original_is_bold ||
+  span.is_italic !== span.original_is_italic ||
+  span.color !== span.original_color;
+
+const getTextReplacementAnnotations = (spansByPage: { [page: number]: TextSpan[] }): CustomAnnotation[] =>
+  Object.entries(spansByPage).flatMap(([pageIndex, spans]) =>
+    spans.filter(hasTextSpanChanges).map((span) => ({
+      id: `rep_${span.id}`,
+      type: 'text_replacement' as const,
+      page_index: parseInt(pageIndex, 10),
+      x: span.x,
+      y: span.y,
+      width: span.width,
+      height: span.height,
+      text: span.text,
+      font_name: span.font_name,
+      font_size: span.font_size,
+      is_bold: span.is_bold,
+      is_italic: span.is_italic,
+      color: span.color,
+      bg_color: span.bg_color || '#ffffff',
+      pt_bbox: span.pt_bbox,
+      pt_origin: span.pt_origin
+    }))
+  );
+
 export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => {
   const [file, setFile] = useState<File | null>(null);
   const [pdfMeta, setPdfMeta] = useState<any | null>(null);
@@ -153,11 +184,22 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   // Saving & Download state
   const [saving, setSaving] = useState(false);
   const [downloadResult, setDownloadResult] = useState<{ download_url: string; filename: string; download_filename: string } | null>(null);
+  const [serverPreviewByPage, setServerPreviewByPage] = useState<Record<number, { image: string; key: string }>>({});
+  const previewRequestRef = useRef(0);
 
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [pageScale, setPageScale] = useState<number>(1);
   const [isMobileViewport, setIsMobileViewport] = useState(() => window.matchMedia('(max-width: 639px)').matches);
+
+  const textReplacementAnnotations = getTextReplacementAnnotations(spansByPage);
+  const textReplacementKey = JSON.stringify(textReplacementAnnotations);
+  const currentServerPreview = serverPreviewByPage[currentPageIndex];
+  const showServerPreview =
+    activeSpanId === null &&
+    !annotations.some((annotation) => annotation.page_index === currentPageIndex) &&
+    Boolean(currentServerPreview) &&
+    currentServerPreview?.key === textReplacementKey;
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 639px)');
@@ -166,6 +208,37 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     return () => media.removeEventListener('change', updateViewport);
   }, []);
 
+  // Render edited text through the backend after typing pauses. This uses the
+  // same PDF font, baseline, and fit-to-field calculations as the downloaded
+  // document, instead of relying on the phone's browser font metrics.
+  useEffect(() => {
+    if (
+      !file ||
+      !pdfMeta ||
+      annotations.some((annotation) => annotation.page_index === currentPageIndex) ||
+      textReplacementAnnotations.length === 0
+    ) return;
+
+    const requestId = ++previewRequestRef.current;
+    const timer = window.setTimeout(async () => {
+      try {
+        const image = await api.previewPdfEdits(file, textReplacementAnnotations, currentPageIndex);
+        if (requestId === previewRequestRef.current) {
+          setServerPreviewByPage({
+            [currentPageIndex]: { image, key: textReplacementKey }
+          });
+        }
+      } catch (error) {
+        console.warn('Could not refresh the exact PDF preview:', error);
+      }
+    }, 500);
+
+    return () => {
+      window.clearTimeout(timer);
+      previewRequestRef.current += 1;
+    };
+  }, [file, pdfMeta, annotations, textReplacementKey, currentPageIndex]);
+
   // Load PDF file into editor
   const loadPdf = async (f: File, pageToOpen = 0): Promise<boolean> => {
     try {
@@ -173,6 +246,8 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       const meta = await api.renderPdfPages(f);
       setFile(f);
       setPdfMeta(meta);
+      setServerPreviewByPage({});
+      previewRequestRef.current += 1;
       setCurrentPageIndex(Math.min(pageToOpen, Math.max(0, meta.pages.length - 1)));
 
       // Group detected spans by page
@@ -585,40 +660,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     if (!file) return;
     try {
       setSaving(true);
-      const replacementAnnotations: CustomAnnotation[] = [];
-      Object.entries(spansByPage).forEach(([pIdxStr, spans]) => {
-        const pIdx = parseInt(pIdxStr);
-        spans.forEach((s) => {
-          if (
-            s.text !== s.original_text ||
-            s.font_name !== s.original_font_name ||
-            s.font_size !== s.original_font_size ||
-            s.is_bold !== s.original_is_bold ||
-            s.is_italic !== s.original_is_italic ||
-            s.color !== s.original_color
-          ) {
-            replacementAnnotations.push({
-              id: `rep_${s.id}`,
-              type: 'text_replacement',
-              page_index: pIdx,
-              x: s.x,
-              y: s.y,
-              width: s.width,
-              height: s.height,
-              text: s.text,
-              font_name: s.font_name,
-              font_size: s.font_size,
-              is_bold: s.is_bold,
-              is_italic: s.is_italic,
-              color: s.color,
-              bg_color: s.bg_color || '#ffffff',
-              pt_bbox: s.pt_bbox,
-              pt_origin: s.pt_origin
-            });
-          }
-        });
-      });
-
+      const replacementAnnotations = getTextReplacementAnnotations(spansByPage);
       const allAnnotationsToApply = [...replacementAnnotations, ...annotations];
       const res = await api.editSavePdf(file, allAnnotationsToApply);
       // Show the backend-rendered PDF in the editor so its live preview and
@@ -1280,7 +1322,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {currentPage && (
             <img
               ref={imgRef}
-              src={currentPage.image_url}
+              src={showServerPreview ? currentServerPreview!.image : currentPage.image_url}
               alt={`Page ${currentPageIndex + 1}`}
               className="max-h-[70vh] max-w-[calc(100vw-1rem)] w-auto object-contain md:max-h-[82vh] md:max-w-none pointer-events-none block"
               onLoad={updatePageScale}
@@ -1421,13 +1463,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {/* Detected Editable Text Spans */}
           {currentSpans.map((span) => {
             const isActive = activeSpanId === span.id;
-            const isModified =
-              span.text !== span.original_text ||
-              span.font_name !== span.original_font_name ||
-              span.font_size !== span.original_font_size ||
-              span.is_bold !== span.original_is_bold ||
-              span.is_italic !== span.original_is_italic ||
-              span.color !== span.original_color;
+            const isModified = hasTextSpanChanges(span);
 
             if (isActive) {
               return (
@@ -1481,12 +1517,12 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   top: `${span.y * 100}%`,
                   width: `${span.width * 100}%`,
                   height: `${span.height * 100}%`,
-                  backgroundColor: isModified ? (span.bg_color || '#ffffff') : 'transparent'
+                  backgroundColor: isModified && !showServerPreview ? (span.bg_color || '#ffffff') : 'transparent'
                 }}
                 title={`Click to edit text: ${span.font_name} ${span.font_size}pt`}
               >
                 {/* Render modified or cleared text */}
-                {isModified && (
+                {isModified && !showServerPreview && (
                   <div
                     className="w-full h-full flex items-center px-0.5 overflow-visible"
                     style={{

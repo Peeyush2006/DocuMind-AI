@@ -201,6 +201,22 @@ export const api = {
     return res.json().then(resolveBackendStorageUrls);
   },
 
+  async previewPdfEdits(file: File, annotations: any[], pageIndex: number): Promise<string> {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('annotations', JSON.stringify(annotations));
+    fd.append('page_index', String(pageIndex));
+    const res = await backendFetch(`${API_BASE}/pdf/preview-edits`, {
+      method: 'POST',
+      body: fd
+    });
+    if (!res.ok) {
+      throw new Error('Failed to render the edited PDF preview');
+    }
+    const result = await res.json();
+    return result.image_data_url as string;
+  },
+
   async mergePdfs(files: File[]): Promise<{
     download_url: string;
     filename: string;
