@@ -358,6 +358,7 @@ export const api = {
   async editSavePdf(file: File, annotations: any[]): Promise<{
     download_url: string;
     filename: string;
+    download_filename: string;
     size_bytes: number;
   }> {
     const submit = () => {

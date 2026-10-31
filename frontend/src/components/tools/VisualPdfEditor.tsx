@@ -146,7 +146,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
 
   // Saving & Download state
   const [saving, setSaving] = useState(false);
-  const [downloadResult, setDownloadResult] = useState<{ download_url: string; filename: string } | null>(null);
+  const [downloadResult, setDownloadResult] = useState<{ download_url: string; filename: string; download_filename: string } | null>(null);
 
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -1819,13 +1819,10 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             <p className="mt-1 text-xs text-slate-500">
               All modifications have been saved in the exact original font and layout.
             </p>
-            <p className="mt-3 mx-auto max-w-full truncate rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600" title={downloadResult.filename}>
-              {downloadResult.filename}
-            </p>
             <div className="mt-4 flex min-w-0 flex-col gap-2">
               <a
-                href={backendUrl(`/api/pdf/download/${encodeURIComponent(downloadResult.filename)}`)}
-                download={downloadResult.filename}
+                href={backendUrl(`/api/pdf/download/${encodeURIComponent(downloadResult.filename)}?download_name=${encodeURIComponent(downloadResult.download_filename)}`)}
+                download={downloadResult.download_filename}
                 className="flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-md bg-[#00a651] px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#008f45]"
               >
                 <Download className="h-4 w-4 shrink-0" />

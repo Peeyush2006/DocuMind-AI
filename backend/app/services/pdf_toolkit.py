@@ -6,12 +6,14 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from PIL import Image
 import base64
+from functools import lru_cache
 from app.config import PROCESSED_DIR, EXPORTS_DIR
 
 WINDOWS_FONTS_DIR = Path("C:/Windows/Fonts")
 
+@lru_cache(maxsize=64)
 def get_system_font_path(font_name: str, is_bold: bool = False, is_italic: bool = False) -> Optional[str]:
-    """Resolves matching local TrueType (.ttf) font file on Windows for exact font reproduction"""
+    """Resolve a local TrueType font on Windows or Linux for PDF text insertion."""
     fn = (font_name or "").lower()
     bold = is_bold or ("bold" in fn) or ("black" in fn) or ("heavy" in fn)
     italic = is_italic or ("italic" in fn) or ("oblique" in fn)
@@ -32,7 +34,41 @@ def get_system_font_path(font_name: str, is_bold: bool = False, is_italic: bool 
         f = "arialbi.ttf" if (bold and italic) else ("arialbd.ttf" if bold else ("ariali.ttf" if italic else "arial.ttf"))
 
     p = WINDOWS_FONTS_DIR / f
-    return str(p) if p.exists() else None
+    if p.exists():
+        return str(p)
+
+    # Render and other Linux hosts do not have Windows fonts. Prefer metrically
+    # compatible Liberation fonts, then DejaVu as a widely installed fallback.
+    linux_names = []
+    if any(k in fn for k in ["times", "serif", "roman"]):
+        linux_names = [
+            "LiberationSerif-BoldItalic.ttf" if bold and italic else
+            "LiberationSerif-Bold.ttf" if bold else
+            "LiberationSerif-Italic.ttf" if italic else "LiberationSerif-Regular.ttf",
+            "DejaVuSerif-Bold.ttf" if bold else "DejaVuSerif.ttf",
+        ]
+    elif any(k in fn for k in ["courier", "mono", "consolas"]):
+        linux_names = [
+            "LiberationMono-BoldItalic.ttf" if bold and italic else
+            "LiberationMono-Bold.ttf" if bold else
+            "LiberationMono-Italic.ttf" if italic else "LiberationMono-Regular.ttf",
+            "DejaVuSansMono-Bold.ttf" if bold else "DejaVuSansMono.ttf",
+        ]
+    else:
+        linux_names = [
+            "LiberationSans-BoldItalic.ttf" if bold and italic else
+            "LiberationSans-Bold.ttf" if bold else
+            "LiberationSans-Italic.ttf" if italic else "LiberationSans-Regular.ttf",
+            "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf",
+        ]
+
+    font_roots = (Path("/usr/share/fonts"), Path("/usr/local/share/fonts"))
+    for root in font_roots:
+        for name in linux_names:
+            matches = list(root.rglob(name)) if root.exists() else []
+            if matches:
+                return str(matches[0])
+    return None
 
 def map_font_name_to_fitz(font_name: str, is_bold: bool = False, is_italic: bool = False) -> str:
     """Maps arbitrary font name and style flags to PyMuPDF's built-in standard Type-1 font codes"""
@@ -532,16 +568,13 @@ def apply_pdf_editor_annotations(
 ) -> Dict[str, Any]:
     """
     Applies interactive editor modifications onto PDF:
-    - In-place text replacements with exact font matching (family, size, bold, italic, color, origin)
+    - In-place text replacements with matching font family, size, style, color, and origin
     - New text insertions
     - Signatures (base64 image stamp)
     - Whiteouts and redactions
     - Highlights
     """
     doc = fitz.open(file_path)
-    # Preserve the source font resource map before redactions alter page content.
-    page_font_resources = {index: page.get_fonts(full=True) for index, page in enumerate(doc)}
-
     # First pass: apply redactions/whiteouts for text replacements
     for item in annotations:
         p_idx = item.get("page_index", 0)
@@ -619,26 +652,12 @@ def apply_pdf_editor_annotations(
             else:
                 pt = fitz.Point(item.get("x", 0) * pw, (item.get("y", 0) + item.get("height", 0.03)) * ph - 2)
 
-            # Reuse the embedded page font first. Production runs on Linux, so
-            # the Windows font lookup below is usually unavailable on Render.
-            source_font = find_page_font_reference(page_font_resources.get(p_idx, []), font_name)
+            # Do not insert through the PDF's original font resource. Subset
+            # fonts often have custom encodings, which can turn replacement
+            # text into unrelated glyphs. Use a real local font instead; the
+            # extracted point size and baseline remain unchanged.
             font_path = get_system_font_path(font_name, is_bold=is_bold, is_italic=is_italic)
-            inserted_with_source_font = False
-            if source_font:
-                try:
-                    page.insert_text(
-                        pt,
-                        new_text,
-                        fontname=source_font,
-                        fontsize=font_size,
-                        color=(r, g, b)
-                    )
-                    inserted_with_source_font = True
-                except Exception:
-                    # Some subset fonts cannot encode newly added characters.
-                    # Fall back to an installed font for those replacements.
-                    pass
-            if not inserted_with_source_font and font_path:
+            if font_path:
                 clean_fid = f"F_{Path(font_path).stem}_{abs(hash(font_path)) % 1000}"
                 page.insert_text(
                     pt,
@@ -648,7 +667,7 @@ def apply_pdf_editor_annotations(
                     fontsize=font_size,
                     color=(r, g, b)
                 )
-            elif not inserted_with_source_font:
+            else:
                 fitz_font = map_font_name_to_fitz(font_name, is_bold=is_bold, is_italic=is_italic)
                 page.insert_text(pt, new_text, fontname=fitz_font, fontsize=font_size, color=(r, g, b))
 

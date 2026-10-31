@@ -708,10 +708,13 @@ async def api_edit_save_pdf(file: UploadFile = File(...), annotations: str = For
     out_name = f"Edited_{Path(file.filename).stem}_{uuid.uuid4().hex[:6]}.pdf"
     out_path = EXPORTS_DIR / out_name
     result = apply_pdf_editor_annotations(str(p), str(out_path), annot_list)
+    source_stem = Path(file.filename or "document.pdf").stem
+    safe_stem = "".join(ch for ch in source_stem if ch.isalnum() or ch in "-_ ").strip(" ._- ") or "document"
+    result["download_filename"] = f"Edited_{safe_stem}.pdf"
     return result
 
 @app.get("/api/pdf/download/{filename}")
-async def api_download_edited_pdf(filename: str):
+async def api_download_edited_pdf(filename: str, download_name: Optional[str] = None):
     safe_filename = Path(filename).name
     if (
         safe_filename != filename
@@ -728,7 +731,7 @@ async def api_download_edited_pdf(filename: str):
     return FileResponse(
         path=str(pdf_path),
         media_type="application/pdf",
-        filename=safe_filename,
+        filename=download_name if download_name and download_name.lower().endswith(".pdf") and Path(download_name).name == download_name else safe_filename,
         content_disposition_type="attachment"
     )
 
