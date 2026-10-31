@@ -30,7 +30,8 @@ import {
   ExternalLink,
   Circle,
   Minus,
-  CheckSquare
+  CheckSquare,
+  Move
 } from 'lucide-react';
 import { api, backendFetch, backendUrl } from '../../api/client';
 
@@ -54,6 +55,7 @@ interface TextSpan {
   origin_y: number;
   pt_bbox: number[];
   pt_origin: number[];
+  position_modified?: boolean;
 }
 
 interface CustomAnnotation {
@@ -124,10 +126,19 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
   // Text spans extracted from document
   const [spansByPage, setSpansByPage] = useState<{ [page: number]: TextSpan[] }>({});
   const [activeSpanId, setActiveSpanId] = useState<string | null>(null);
+  const spanDragRef = useRef<{
+    id: string; pointerId: number; startX: number; startY: number;
+    startClientX: number; startClientY: number; rectWidth: number; rectHeight: number;
+    pageWidth: number; pageHeight: number; origin: number[];
+  } | null>(null);
 
   // Custom annotations (signatures, whiteouts, highlights, additions)
   const [annotations, setAnnotations] = useState<CustomAnnotation[]>([]);
   const [selectedAnnotId, setSelectedAnnotId] = useState<string | null>(null);
+  const annotationDragRef = useRef<{
+    id: string; pointerId: number; startX: number; startY: number;
+    startClientX: number; startClientY: number; rectWidth: number; rectHeight: number;
+  } | null>(null);
 
   // Undo stack
   const [undoHistory, setUndoHistory] = useState<{ spans: { [page: number]: TextSpan[] }; annots: CustomAnnotation[] }[]>([]);
@@ -419,6 +430,86 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
     });
   };
 
+  const beginSpanDrag = (e: React.PointerEvent<HTMLButtonElement>, span: TextSpan) => {
+    const pageRect = pageContainerRef.current?.getBoundingClientRect();
+    if (!pageRect || !currentPage) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pushUndo();
+    setActiveSpanId(span.id);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    spanDragRef.current = {
+      id: span.id,
+      pointerId: e.pointerId,
+      startX: span.x,
+      startY: span.y,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      rectWidth: pageRect.width,
+      rectHeight: pageRect.height,
+      pageWidth: currentPage.width,
+      pageHeight: currentPage.height,
+      origin: [...span.pt_origin]
+    };
+  };
+
+  const moveSpanDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = spanDragRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    e.preventDefault();
+    const current = (spansByPage[currentPageIndex] || []).find((span) => span.id === drag.id);
+    if (!current) return;
+    const x = Math.max(0, Math.min(1 - current.width, drag.startX + (e.clientX - drag.startClientX) / drag.rectWidth));
+    const y = Math.max(0, Math.min(1 - current.height, drag.startY + (e.clientY - drag.startClientY) / drag.rectHeight));
+    const dx = x - drag.startX;
+    const dy = y - drag.startY;
+    setSpansByPage((prev) => ({
+      ...prev,
+      [currentPageIndex]: (prev[currentPageIndex] || []).map((span) => span.id === drag.id
+        ? {
+            ...span,
+            x,
+            y,
+            origin_x: span.origin_x + dx,
+            origin_y: span.origin_y + dy,
+            pt_origin: [drag.origin[0] + dx * drag.pageWidth, drag.origin[1] + dy * drag.pageHeight],
+            position_modified: true
+          }
+        : span)
+    }));
+  };
+
+  const beginAnnotationDrag = (e: React.PointerEvent<HTMLButtonElement>, annot: CustomAnnotation) => {
+    const pageRect = pageContainerRef.current?.getBoundingClientRect();
+    if (!pageRect) return;
+    e.preventDefault();
+    e.stopPropagation();
+    pushUndo();
+    setSelectedAnnotId(annot.id);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    annotationDragRef.current = {
+      id: annot.id,
+      pointerId: e.pointerId,
+      startX: annot.x,
+      startY: annot.y,
+      startClientX: e.clientX,
+      startClientY: e.clientY,
+      rectWidth: pageRect.width,
+      rectHeight: pageRect.height
+    };
+  };
+
+  const moveAnnotationDrag = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const drag = annotationDragRef.current;
+    if (!drag || e.pointerId !== drag.pointerId) return;
+    e.preventDefault();
+    setAnnotations((prev) => prev.map((annot) => annot.id === drag.id ? {
+      ...annot,
+      x: Math.max(0, Math.min(1 - annot.width, drag.startX + (e.clientX - drag.startClientX) / drag.rectWidth)),
+      y: Math.max(0, Math.min(1 - annot.height, drag.startY + (e.clientY - drag.startClientY) / drag.rectHeight))
+    } : annot));
+  };
+
   // Clear all text from document while preserving template design
   const clearWholeDocument = () => {
     pushUndo();
@@ -532,7 +623,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       Object.entries(spansByPage).forEach(([pIdxStr, spans]) => {
         const pIdx = parseInt(pIdxStr);
         spans.forEach((s) => {
-          if (s.text !== s.original_text) {
+          if (s.text !== s.original_text || s.position_modified) {
             replacementAnnotations.push({
               id: `rep_${s.id}`,
               type: 'text_replacement',
@@ -1218,6 +1309,21 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
             />
           )}
 
+          {/* Cover the original scan text where an extracted text span was moved. */}
+          {currentPage && currentSpans.filter((span) => span.position_modified).map((span) => (
+            <div
+              key={`moved-span-cover-${span.id}`}
+              className="absolute z-10 pointer-events-none"
+              style={{
+                left: `${(span.pt_bbox[0] / currentPage.width) * 100}%`,
+                top: `${(span.pt_bbox[1] / currentPage.height) * 100}%`,
+                width: `${((span.pt_bbox[2] - span.pt_bbox[0]) / currentPage.width) * 100}%`,
+                height: `${((span.pt_bbox[3] - span.pt_bbox[1]) / currentPage.height) * 100}%`,
+                backgroundColor: span.bg_color || '#ffffff'
+              }}
+            />
+          ))}
+
           {/* FLOATING IN-LINE CONTEXTUAL FONT TOOLBAR (Screenshot 3) */}
           {activeSpan && (
             <div
@@ -1352,7 +1458,7 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {/* Detected Editable Text Spans */}
           {currentSpans.map((span) => {
             const isActive = activeSpanId === span.id;
-            const isModified = span.text !== span.original_text;
+            const isModified = span.text !== span.original_text || Boolean(span.position_modified);
             const visualFontSize = getVisualFontSize(span.font_size);
             const pageWidth = pageContainerRef.current?.clientWidth || 0;
             const editorWidthPx = Math.max(24, span.text.length * visualFontSize * 0.62 + 12);
@@ -1373,6 +1479,21 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                     height: `${span.height * 100}%`
                   }}
                 >
+                  <button
+                    type="button"
+                    onPointerDown={(e) => beginSpanDrag(e, span)}
+                    onPointerMove={moveSpanDrag}
+                    onPointerUp={() => { spanDragRef.current = null; }}
+                    onPointerCancel={() => { spanDragRef.current = null; }}
+                    onLostPointerCapture={() => { spanDragRef.current = null; }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute -top-6 right-0 z-50 flex h-6 items-center gap-1 rounded-t border border-blue-500 bg-blue-600 px-1.5 text-[10px] font-medium text-white shadow-sm touch-none cursor-grab active:cursor-grabbing"
+                    title="Drag to move this text"
+                    aria-label="Move text"
+                  >
+                    <Move className="h-3 w-3" />
+                    Move
+                  </button>
                   <input
                     type="text"
                     autoFocus
@@ -1467,6 +1588,22 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
                   minHeight: `${annot.height * 100}%`
                 }}
               >
+                {isSelected && (
+                  <button
+                    type="button"
+                    onPointerDown={(e) => beginAnnotationDrag(e, annot)}
+                    onPointerMove={moveAnnotationDrag}
+                    onPointerUp={() => { annotationDragRef.current = null; }}
+                    onPointerCancel={() => { annotationDragRef.current = null; }}
+                    onLostPointerCapture={() => { annotationDragRef.current = null; }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute -top-3 left-0 z-50 rounded-full bg-blue-600 p-1.5 text-white shadow-md touch-none cursor-grab active:cursor-grabbing"
+                    title="Drag to move element"
+                    aria-label="Move element"
+                  >
+                    <Move className="h-3 w-3" />
+                  </button>
+                )}
                 {isSelected && (
                   <button
                     onClick={(e) => {
