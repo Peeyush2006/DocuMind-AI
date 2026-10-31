@@ -41,11 +41,17 @@ interface TextSpan {
   text: string;
   original_text: string;
   font_name: string;
+  original_font_name: string;
   font_family: string;
+  original_font_family: string;
   font_size: number;
+  original_font_size: number;
   is_bold: boolean;
+  original_is_bold: boolean;
   is_italic: boolean;
+  original_is_italic: boolean;
   color: string;
+  original_color: string;
   bg_color?: string;
   x: number;
   y: number;
@@ -172,7 +178,15 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       // Group detected spans by page
       const grouped: { [page: number]: TextSpan[] } = {};
       meta.pages.forEach((p) => {
-        grouped[p.page_index] = p.spans || [];
+        grouped[p.page_index] = (p.spans || []).map((span: TextSpan) => ({
+          ...span,
+          original_font_name: span.font_name,
+          original_font_family: span.font_family,
+          original_font_size: span.font_size,
+          original_is_bold: span.is_bold,
+          original_is_italic: span.is_italic,
+          original_color: span.color
+        }));
       });
       setSpansByPage(grouped);
       setAnnotations([]);
@@ -480,7 +494,13 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
         const p = parseInt(pStr);
         updated[p] = pageSpans.map((s) => ({
           ...s,
-          text: s.original_text
+          text: s.original_text,
+          font_name: s.original_font_name,
+          font_family: s.original_font_family,
+          font_size: s.original_font_size,
+          is_bold: s.original_is_bold,
+          is_italic: s.original_is_italic,
+          color: s.original_color
         }));
       });
       return updated;
@@ -567,7 +587,14 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
       Object.entries(spansByPage).forEach(([pIdxStr, spans]) => {
         const pIdx = parseInt(pIdxStr);
         spans.forEach((s) => {
-          if (s.text !== s.original_text) {
+          if (
+            s.text !== s.original_text ||
+            s.font_name !== s.original_font_name ||
+            s.font_size !== s.original_font_size ||
+            s.is_bold !== s.original_is_bold ||
+            s.is_italic !== s.original_is_italic ||
+            s.color !== s.original_color
+          ) {
             replacementAnnotations.push({
               id: `rep_${s.id}`,
               type: 'text_replacement',
@@ -1377,7 +1404,13 @@ export const VisualPdfEditor: React.FC<VisualPdfEditorProps> = ({ onClose }) => 
           {/* Detected Editable Text Spans */}
           {currentSpans.map((span) => {
             const isActive = activeSpanId === span.id;
-            const isModified = span.text !== span.original_text;
+            const isModified =
+              span.text !== span.original_text ||
+              span.font_name !== span.original_font_name ||
+              span.font_size !== span.original_font_size ||
+              span.is_bold !== span.original_is_bold ||
+              span.is_italic !== span.original_is_italic ||
+              span.color !== span.original_color;
 
             if (isActive) {
               return (
