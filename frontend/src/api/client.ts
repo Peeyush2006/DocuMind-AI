@@ -360,13 +360,33 @@ export const api = {
     filename: string;
     size_bytes: number;
   }> {
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('annotations', JSON.stringify(annotations));
-    const res = await backendFetch(`${API_BASE}/pdf/edit-save`, {
-      method: 'POST',
-      body: fd
-    });
+    const submit = () => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('annotations', JSON.stringify(annotations));
+      return backendFetch(`${API_BASE}/pdf/edit-save`, {
+        method: 'POST',
+        body: fd
+      });
+    };
+
+    let res: Response;
+    try {
+      res = await submit();
+    } catch (error) {
+      // Render's free service may be waking, and phones are more likely to drop
+      // the first request while it starts. Wake the API, then retry the upload once.
+      if (!(error instanceof TypeError)) throw error;
+      try {
+        await backendFetch(`${API_BASE}/health`, { cache: 'no-store' });
+        res = await submit();
+      } catch (retryError) {
+        if (retryError instanceof TypeError) {
+          throw new Error('Could not connect to the PDF service. Check your phone connection and try again.');
+        }
+        throw retryError;
+      }
+    }
     if (!res.ok) {
       let detail = '';
       const errorResponse = res.clone();
